@@ -48,7 +48,6 @@ message FillerParameter {
   optional float max = 4 [default = 1]; // the max value in uniform filler
   optional float mean = 5 [default = 0]; // the mean value in Gaussian filler
   optional float std = 6 [default = 1]; // the std value in Gaussian filler
-  optional float alpha = 9 [default = 0]; // the alpha in equation 15 of <Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification>
   // The expected number of non-zero output weights for a given input in
   // Gaussian filler -- the default -1 means don't perform sparsification.
   optional int32 sparse = 7 [default = -1];
@@ -64,12 +63,12 @@ message FillerParameter {
 
 message NetParameter {
   optional string name = 1; // consider giving the network a name
-  // The input blobs to the network.
+  // DEPRECATED. See InputParameter. The input blobs to the network.
   repeated string input = 3;
-  // The shape of the input blobs.
+  // DEPRECATED. See InputParameter. The shape of the input blobs.
   repeated BlobShape input_shape = 8;
 
-  // 4D input dimensions -- deprecated.  Use "shape" instead.
+  // 4D input dimensions -- deprecated.  Use "input_shape" instead.
   // If specified, for each input blob there should be four
   // values specifying the num, channels, height and width of the input blob.
   // Thus, there should be a total of (4 * #input) numbers.
@@ -307,7 +306,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 143 (last added: scale_param)
+// LayerParameter next available layer-specific ID: 145 (last added: crop_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -356,16 +355,17 @@ message LayerParameter {
   // The default for the engine is set by the ENGINE switch at compile-time.
   optional AccuracyParameter accuracy_param = 102;
   optional ArgMaxParameter argmax_param = 103;
-  optional BatchNormParameter batch_norm_param = 144;
-  optional BiasParameter bias_param = 150;
+  optional BatchNormParameter batch_norm_param = 139;
+  optional BiasParameter bias_param = 141;
   optional ConcatParameter concat_param = 104;
   optional ContrastiveLossParameter contrastive_loss_param = 105;
   optional ConvolutionParameter convolution_param = 106;
+  optional CropParameter crop_param = 144;
   optional DataParameter data_param = 107;
   optional DropoutParameter dropout_param = 108;
   optional DummyDataParameter dummy_data_param = 109;
   optional EltwiseParameter eltwise_param = 110;
-  optional ELUParameter elu_param = 149;
+  optional ELUParameter elu_param = 140;
   optional EmbedParameter embed_param = 137;
   optional ExpParameter exp_param = 111;
   optional FlattenParameter flatten_param = 135;
@@ -375,6 +375,7 @@ message LayerParameter {
   optional ImageDataParameter image_data_param = 115;
   optional InfogainLossParameter infogain_loss_param = 116;
   optional InnerProductParameter inner_product_param = 117;
+  optional InputParameter input_param = 143;
   optional LogParameter log_param = 134;
   optional LRNParameter lrn_param = 118;
   optional MemoryDataParameter memory_data_param = 119;
@@ -386,7 +387,7 @@ message LayerParameter {
   optional ReductionParameter reduction_param = 136;
   optional ReLUParameter relu_param = 123;
   optional ReshapeParameter reshape_param = 133;
-  optional ScaleParameter scale_param = 148;
+  optional ScaleParameter scale_param = 142;
   optional SigmoidParameter sigmoid_param = 124;
   optional SoftmaxParameter softmax_param = 125;
   optional SPPParameter spp_param = 132;
@@ -395,14 +396,6 @@ message LayerParameter {
   optional ThresholdParameter threshold_param = 128;
   optional TileParameter tile_param = 138;
   optional WindowDataParameter window_data_param = 129;
-  optional BNParameter bn_param = 139;
-  optional LocalParameter local_param = 140;
-  optional InsanityParameter insanity_param = 141;
-  optional TripletLossParameter triplet_loss_param = 142;
-  optional ROIPoolingParameter roi_pooling_param = 143;
-  optional EltwiseAffineParameter eltwise_affine_param = 145;
-  optional SubRegionParameter sub_region_param = 146;
-  optional NoiseParameter noise_param = 147;
 }
 
 // Message that stores parameters used to apply transformation
@@ -440,7 +433,7 @@ message LossParameter {
     // Outputs that receive the ignore label will NOT be ignored in computing
     // the normalization factor.
     FULL = 0;
-    // Divide by the total number of output locations that do not take the 
+    // Divide by the total number of output locations that do not take the
     // ignore_label.  If ignore_label is not set, this behaves like FULL.
     VALID = 1;
     // Divide by the batch size.
@@ -606,6 +599,24 @@ message ConvolutionParameter {
   optional bool force_nd_im2col = 17 [default = false];
 }
 
+message CropParameter {
+  // To crop, elements of the first bottom are selected to fit the dimensions
+  // of the second, reference bottom. The crop is configured by
+  // - the crop `axis` to pick the dimensions for cropping
+  // - the crop `offset` to set the shift for all/each dimension
+  // to align the cropped bottom with the reference bottom.
+  // All dimensions up to but excluding `axis` are preserved, while
+  // the dimensions including and trailing `axis` are cropped.
+  // If only one `offset` is set, then all dimensions are offset by this amount.
+  // Otherwise, the number of offsets must equal the number of cropped axes to
+  // shift the crop in each dimension accordingly.
+  // Note: standard dimensions are N,C,H,W so the default is a spatial crop,
+  // and `axis` may be negative to index from the end (e.g., -1 for the last
+  // axis).
+  optional int32 axis = 1 [default = 2];
+  repeated uint32 offset = 2;
+}
+
 message DataParameter {
   enum DB {
     LEVELDB = 0;
@@ -680,7 +691,7 @@ message EltwiseParameter {
 // Message that stores parameters used by ELULayer
 message ELUParameter {
   // Described in:
-  // Clevert, D.-A., Unterthiner, T., & Hochreiter, S. (2015). Fast and Accurate 
+  // Clevert, D.-A., Unterthiner, T., & Hochreiter, S. (2015). Fast and Accurate
   // Deep Network Learning by Exponential Linear Units (ELUs). arXiv
   optional float alpha = 1 [default = 1];
 }
@@ -766,16 +777,6 @@ message ImageDataParameter {
   optional uint32 new_width = 10 [default = 0];
   // Specify if the images are color or gray
   optional bool is_color = 11 [default = true];
-  // Affine transform parameters
-  optional bool face_transform = 13 [default = false];
-  optional float max_shear_ratio = 14 [default = 0];
-  optional float max_aspect_ratio = 15 [default = 0];
-  optional float max_rotate_angle = 16 [default = 0];
-  optional float min_random_scale = 17 [default = 1];
-  optional float max_random_scale = 18 [default = 1];
-  optional uint32 max_random_shift = 19 [default = 0];
-  optional bool face_mirror = 20 [default = false];
-  optional uint32 face_point_num = 21 [default = 0];
   // DEPRECATED. See TransformationParameter. For data pre-processing, we can do
   // simple scaling and subtracting the data mean, if provided. Note that the
   // mean subtraction is always carried out before scaling.
@@ -805,6 +806,19 @@ message InnerProductParameter {
   // all preceding axes are retained in the output.
   // May be negative to index from the end (e.g., -1 for the last axis).
   optional int32 axis = 5 [default = 1];
+  // Specify whether to transpose the weight matrix or not.
+  // If transpose == true, any operations will be performed on the transpose
+  // of the weight matrix. The weight matrix itself is not going to be transposed
+  // but rather the transfer flag of operations will be toggled accordingly.
+  optional bool transpose = 6 [default = false];
+}
+
+message InputParameter {
+  // This layer produces N >= 1 top blob(s) to be assigned manually.
+  // Define N shapes to set a shape for each top.
+  // Define 1 shape to set the same shape for every top.
+  // Define no shape to defer to reshaping manually.
+  repeated BlobShape shape = 1;
 }
 
 // Message that stores parameters used by LogLayer
@@ -1205,14 +1219,6 @@ message V1LayerParameter {
     TANH = 23;
     WINDOW_DATA = 24;
     THRESHOLD = 31;
-    LOCAL = 41;
-    BN = 42;
-    NORMALIZE = 43;
-    INSANITY = 44;
-    TRIPLET_LOSS = 45;
-    ROIPOOLING = 46;
-    BATCH_NORM = 47;
-    ELTWISE_AFFINE = 48;
   }
   optional LayerType type = 5;
   repeated BlobProto blobs = 6;
@@ -1256,15 +1262,6 @@ message V1LayerParameter {
   optional TransformationParameter transform_param = 36;
   optional LossParameter loss_param = 42;
   optional V0LayerParameter layer = 1;
-  optional BNParameter bn_param = 43;
-  optional LocalParameter local_param = 44;
-  optional PReLUParameter prelu_param = 45;
-  optional InsanityParameter insanity_param = 46;
-  optional TripletLossParameter triplet_loss_param = 47;
-  optional ROIPoolingParameter roi_pooling_param = 48;
-  optional EltwiseAffineParameter eltwise_affine_param = 49;
-  optional SubRegionParameter sub_region_param = 50;
-  optional NoiseParameter noise_param = 51;
 }
 
 // DEPRECATED: V0LayerParameter is the old way of specifying layer parameters
@@ -1361,30 +1358,6 @@ message V0LayerParameter {
   optional HDF5OutputParameter hdf5_output_param = 1001;
 }
 
-message TripletLossParameter {
-  //margin for negative triplet
-  optional float margin = 1 [default = 1.0];
-}
-
-// Message that stores parameters used by ROIPoolingLayer
-message ROIPoolingParameter {
-  // Pad, kernel size, and stride are all given as a single value for equal
-  // dimensions in height and width or as Y, X pairs.
-  optional uint32 pooled_h = 1 [default = 0]; // The pooled output height
-  optional uint32 pooled_w = 2 [default = 0]; // The pooled output width
-  // Multiplicative spatial scale factor to translate ROI coords from their
-  // input scale to the scale used when pooling
-  optional float spatial_scale = 3 [default = 1];
-}
-
-message InsanityParameter {
-  // Insanity, or Randomized Leaky Rectified Linear Unit, described in
-  // Bing Xu, Naiyan Wang, Tianqi Chen, Mu Li,
-  // Empirical Evaluation of Rectified Activations in Convolution Network
-  
-  optional float lb = 1 [default = 5.];
-  optional float ub = 2 [default = 10.];
-}
 message PReLUParameter {
   // Parametric ReLU described in K. He et al, Delving Deep into Rectifiers:
   // Surpassing Human-Level Performance on ImageNet Classification, 2015.
@@ -1393,48 +1366,4 @@ message PReLUParameter {
   optional FillerParameter filler = 1;
   // Whether or not slope paramters are shared across channels.
   optional bool channel_shared = 2 [default = false];
-}
-// Message that stores parameters used by BNLayer
-message BNParameter {
-  optional FillerParameter scale_filler = 1; // The filler for the scale
-  optional FillerParameter shift_filler = 2; // The filler for the shift
-  optional float var_eps = 3 [default = 1e-10]; // The epsilon added to variance
-  optional bool moving_average = 4 [default = true]; // whether or not using moving average for inference
-  optional float decay = 5 [default = 0.95]; // The decay factor for moving average
-}
-
-// Message that stores parameters used by LocalLayer
-message LocalParameter {
-  optional uint32 num_output = 1; // The number of outputs for the layer
-  optional bool bias_term = 2 [default = true]; // whether to have bias terms
-  optional uint32 pad = 3 [default = 0]; // The padding size
-  optional uint32 kernel_size = 4; // The kernel size
-  optional uint32 stride = 6 [default = 1]; // The stride
-  optional FillerParameter weight_filler = 7; // The filler for the weight
-  optional FillerParameter bias_filler = 8; // The filler for the bias
-}
-
-message EltwiseAffineParameter {
-
-  // Initial value of a_i. Default is a_i=1.0 for all i.
-  optional FillerParameter slope_filler = 1;
-
-  optional FillerParameter bias_filler = 2;
-
-  // Whether or not slope paramters are shared across channels.
-  optional bool channel_shared = 3 [default = false];
-}
-
-message SubRegionParameter {
-  optional uint32 region_height = 1;
-  optional uint32 region_width = 2;
-  optional uint32 data_height = 3;
-  optional uint32 data_width = 4;
-  optional uint32 as_dim = 5 [default = 1];
-}
-
-message NoiseParameter {
-  optional float gaussian_std = 1 [default = 0];
-  optional float uniform_range = 2 [default = 0];
-  optional float bias = 3 [default = 0];
 }

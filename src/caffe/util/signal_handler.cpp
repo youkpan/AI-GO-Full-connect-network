@@ -13,12 +13,9 @@ namespace {
 
   void handle_signal(int signal) {
     switch (signal) {
-      //case SIGHUP://there is no SIGHUP in windows
-      //  got_sighup = true;
-      //  break;
-    case SIGBREAK:
-      got_sighup = true;
-      break;
+    //case SIGHUP:
+    //  got_sighup = true;
+    //  break;
     case SIGINT:
       got_sigint = true;
       break;
@@ -30,52 +27,52 @@ namespace {
       LOG(FATAL) << "Tried to hookup signal handlers more than once.";
     }
     already_hooked_up = true;
-
-    //struct sigaction sa;
-    //// Setup the handler
-    //sa.sa_handler = &handle_signal;
-    //// Restart the system call, if at all possible
-    //sa.sa_flags = SA_RESTART;
-    //// Block every signal during the handler
-    //sigfillset(&sa.sa_mask);
-    //// Intercept SIGHUP and SIGINT
-    //if (sigaction(SIGHUP, &sa, NULL) == -1) {
-    //  LOG(FATAL) << "Cannot install SIGHUP handler.";
-    //}
-    //if (sigaction(SIGINT, &sa, NULL) == -1) {
-    //  LOG(FATAL) << "Cannot install SIGINT handler.";
-    //}
-    if (signal(SIGBREAK, handle_signal) == SIG_ERR) {
-      LOG(FATAL) << "Cannot install SIGBREAK handler.";
-    }
-    if (signal(SIGINT, handle_signal) == SIG_ERR) {
-      LOG(FATAL) << "Cannot install SIGINT handler.";
-    }
+	//struct sigaction sa;
+	//// Setup the handler
+	//sa.sa_handler = &handle_signal;
+	//// Restart the system call, if at all possible
+	//sa.sa_flags = SA_RESTART;
+	//// Block every signal during the handler
+	//sigfillset(&sa.sa_mask);
+	//// Intercept SIGHUP and SIGINT
+	//if (sigaction(SIGHUP, &sa, NULL) == -1) {
+	//  LOG(FATAL) << "Cannot install SIGHUP handler.";
+	//}
+	//if (sigaction(SIGINT, &sa, NULL) == -1) {
+	//  LOG(FATAL) << "Cannot install SIGINT handler.";
+	//}
+	if (signal(SIGBREAK, handle_signal) == SIG_ERR) {
+		LOG(FATAL) << "Cannot install SIGBREAK handler.";
+	}
+	if (signal(SIGINT, handle_signal) == SIG_ERR) {
+		LOG(FATAL) << "Cannot install SIGINT handler.";
+	}
   }
 
   // Set the signal handlers to the default.
   void UnhookHandler() {
     if (already_hooked_up) {
-      //struct sigaction sa;
-      //// Setup the sighub handler
-      //sa.sa_handler = SIG_DFL;
-      //// Restart the system call, if at all possible
-      //sa.sa_flags = SA_RESTART;
-      //// Block every signal during the handler
-      //sigfillset(&sa.sa_mask);
-      //// Intercept SIGHUP and SIGINT
-      //if (sigaction(SIGHUP, &sa, NULL) == -1) {
-      //  LOG(FATAL) << "Cannot uninstall SIGHUP handler.";
-      //}
-      //if (sigaction(SIGINT, &sa, NULL) == -1) {
-      //  LOG(FATAL) << "Cannot uninstall SIGINT handler.";
-      //}
-      if (signal(SIGBREAK, SIG_DFL) == SIG_ERR) {
-        LOG(FATAL) << "Cannot uninstall SIGHUP handler.";
-      }
-      if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
-        LOG(FATAL) << "Cannot uninstall SIGINT handler.";
-      }
+		//struct sigaction sa;
+		//// Setup the sighub handler
+		//sa.sa_handler = SIG_DFL;
+		//// Restart the system call, if at all possible
+		//sa.sa_flags = SA_RESTART;
+		//// Block every signal during the handler
+		//sigfillset(&sa.sa_mask);
+		//// Intercept SIGHUP and SIGINT
+		//if (sigaction(SIGHUP, &sa, NULL) == -1) {
+		//  LOG(FATAL) << "Cannot uninstall SIGHUP handler.";
+		//}
+		//if (sigaction(SIGINT, &sa, NULL) == -1) {
+		//  LOG(FATAL) << "Cannot uninstall SIGINT handler.";
+		//}
+		if (signal(SIGBREAK, SIG_DFL) == SIG_ERR) {
+			LOG(FATAL) << "Cannot uninstall SIGHUP handler.";
+		}
+		if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
+			LOG(FATAL) << "Cannot uninstall SIGINT handler.";
+		}
+
       already_hooked_up = false;
     }
   }

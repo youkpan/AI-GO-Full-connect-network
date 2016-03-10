@@ -7,7 +7,7 @@ layer {
   data_param {
     source: "examples/mnist/mnist-train-leveldb"
     backend: LEVELDB
-    batch_size: 400
+    batch_size: 200
   }
   transform_param {
     scale: 1
