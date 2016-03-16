@@ -1,6 +1,6 @@
 
 围棋AI 更新了 训练数据 ，达到5% 的职业水准 ：
-https://github.com/youkpan/caffe-windows-1/releases/edit/hayoouAI
+https://github.com/youkpan/caffe-windows-1/releases/tag/hayoouAI
 
 Forked from https://www.github.com/BVLC/caffe master branch in 2016/02/04 . Next update time may be around 2016/05/01 .
 
