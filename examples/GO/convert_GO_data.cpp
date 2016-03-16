@@ -369,7 +369,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 				cols = 44;
 				//高字节从B0-F7，低字节从A1-FE
 				//176-247 ，161 - 254
-				rows1 = 19;
+				rows1 = 38;
 				cols1 = 38;
 			}
 
@@ -498,7 +498,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 
 				//memcpy(tpixels, sline.substr(mpos2 + 1).c_str(), mpos);
 				spos1 = 0;
-				mpos2 = sline.find("B[", mpos + 1);
+				mpos2 = sline.find(";B[", mpos + 1);
 				int start_pos = mpos2;
 				start_ = 0;
 
@@ -547,7 +547,14 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 					if (GOfile[mpos -1] != win){
 
 						pixels[  yy*cols1 + xx ] = 1;
+						for (int j; j < 361; j++)
+						{
+							int x = j % (cols1 / 2);
+							int y = j / rows1 / 2;
+							pixels[(y + rows1 / 2)*cols1 + x ] = 0;
+						}
 
+						pixels[(yy + rows1 / 2)* cols1 + xx ] = 1;
 						spos = sline.find_first_of("[", mpos2 + 1);
 						spos1 = sline.find_first_of("]", spos + 1);
 						if (!(start_num == 1 || start_num == 2)&&(spos1 - spos != 3 ))
@@ -579,10 +586,10 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 								memset(tpixels, 0, rows1*cols1);
 								
 								for (int ii = 0; ii < cols1/2; ii++)
-									for (int jj = 0; jj < rows1; jj++)
+									for (int jj = 0; jj < rows1/2; jj++)
 
 										for (int ii2 = cols1 / 2; ii2 < cols1; ii2++)
-											for (int jj2 = 0; jj2 < rows1; jj2++)
+											for (int jj2 = 0; jj2 < rows1 / 2; jj2++)
 												if (pixels[jj*cols1 + ii] ==0 && pixels[jj2*cols1 + ii2 + cols1 / 2] ==0)
 												{
 													if (( ii2 % (cols1 / 2) == ii) && jj == jj2)
@@ -687,6 +694,14 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 					else if (*sline.substr(mpos - 1, mpos).c_str() == win)
 					{
 						pixels[ yy*cols1 + xx + cols1/2] = 1;
+						for (int j; j < 361; j++)
+						{
+							int x = j % (cols1 / 2);
+							int y = j / rows1 / 2;
+							pixels[(y + rows1 / 2)*cols1 + x + cols1/2] = 0;
+						}
+						pixels[(yy + rows1 / 2)* cols1 + xx + cols1/2] = 1;
+
 					}
 
 					//if (!start_)
