@@ -718,33 +718,68 @@ namespace caffe {
 
 	}
 
-int add_broadcast_label(int * groups, int groups_label, int get_count1,int x,int y)
+	struct broadcast_re{
+		int count = 0;
+		char reach_boundary = 0;
+	};
+
+struct	broadcast_re * add_broadcast_label(int * groups, const char *qipan, char op_type, int groups_label, int get_count1, int x, int y)
 {
 	int get_count = 0;
+	struct broadcast_re  broadcast_result;
+	struct broadcast_re *  broadcast_result_ptr;
+	char reach_boundary = 0;
 	//check nearby 
 	if (x < 18)
-		if (groups[x + 1 + 19 * y] == 0){
+		if (groups[x + 1 + 19 * y] == 0 && qipan[x + 1 + 19 * y] != op_type){
 			groups[x + 1 + 19 * y] = groups_label;
 			get_count++;
+			
+			broadcast_result_ptr = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, x + 1, y);
+			get_count += broadcast_result_ptr->count;
+			reach_boundary = reach_boundary||broadcast_result_ptr->reach_boundary  ;
 		}
 
 	if (x > 0)
-		if (groups[x - 1 + 19 * y] == 0){
+		if (groups[x - 1 + 19 * y] == 0 && qipan[x - 1 + 19 * y] != op_type){
 			groups[x - 1 + 19 * y] = groups_label;
 			get_count++;
+			broadcast_result_ptr = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, x - 1, y);
+			get_count += broadcast_result_ptr->count;
+			reach_boundary = reach_boundary || broadcast_result_ptr->reach_boundary;
 		}
 	if (y < 18)
-		if (groups[x + 19 * (y + 1)] == 0){
+		if (groups[x + 19 * (y + 1)] == 0 && qipan[x + 19 * (y + 1)] != op_type){
 			groups[x + 19 * (y + 1)] = groups_label;
 			get_count++;
+			broadcast_result_ptr = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, x, y + 1);
+			get_count += broadcast_result_ptr->count;
+			reach_boundary = reach_boundary || broadcast_result_ptr->reach_boundary;
 		}
 	if (y > 0)
-		if (groups[x + 1 + 19 * (y - 1)] == 0){
-			groups[x + 1 + 19 * (y - 1)] = groups_label;
+		if (groups[x + 19 * (y - 1)] == 0 && qipan[x + 19 * (y - 1)] != op_type){
+			groups[x  + 19 * (y - 1)] = groups_label;
 			get_count++;
+			broadcast_result_ptr = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, x, y - 1);
+			get_count += broadcast_result_ptr->count;
+			reach_boundary = reach_boundary || broadcast_result_ptr->reach_boundary;
 		}
 
-	return get_count1 + get_count;
+	if ((x == 0 || y == 0 || x == 18 || y == 18) )
+		broadcast_result.reach_boundary = 1;
+
+	broadcast_result.count =  get_count;
+	broadcast_result.reach_boundary = broadcast_result.reach_boundary || reach_boundary;
+
+	return  & broadcast_result;
+
+	//if (get_count>0)
+	//	return  & broadcast_result;
+	//else if (get_count == 0)
+	//{
+	//	return 0;
+	//}
+
 }
 struct chessline{
 	int count = 0;
@@ -754,7 +789,7 @@ struct chessline{
 };
 
 #define LINENUM 361
-void broadcast_label(int *groups, int * groups_area, const char * qipan, char xx, char yy, char type, int groups_label)// struct chessline * chessline, 
+void broadcast_label(int *groups, int * groups_area, const char * qipan, char xx, char yy, char mytype, int groups_label)// struct chessline * chessline, 
 {
 
 	//int has_in_line = 0;
@@ -790,74 +825,89 @@ void broadcast_label(int *groups, int * groups_area, const char * qipan, char xx
 	else
 		return;
 
+	int op_type = 1;
+	if (mytype==1)
+		op_type = 2;
 	//	groups_label = groups[xx + 19 * yy] ;
 
 	int get_count = 0;
-	int has_reach_eage = 0;
-	for (int range = 1; range < 19; range++){
-		get_count = 0;
-		for (int x = 0; x < 19; x++){
-			for (int y = 0; y < 19; y++)
-				for (int i = 0; i < 19; i++)
-					for (int j = 0; j < 19; j++)
-					{
-						if ((abs(x - i) == range && abs(j - y) <= range || abs(x - i) <= range  && abs(j - y) == range))
-							if ((abs(x - i) == range && j == y || i == x  && abs(j - y) == range)
-								&& (qipan[i + 19 * j] == type || qipan[x + 19 * y] == 0) && groups[i + 19 * j] == groups_label)
-							{
-								
-								groups[x + 19 * y] = groups_label;
-								get_count++;
-								//check near by
-								if (abs(x - i) == range){
-									for (int m = y; abs(m - y) <= range; m--){
-										int get_count1 = add_broadcast_label(groups, groups_label, get_count1, x, m);
-										get_count += get_count1;
-										if (get_count1 == 0)
-											break;
-									}
-								}
-								if (abs(y - j) == range){
-									for (int m = x; abs(m - x) <= range; m--){
-										int get_count1 = add_broadcast_label(groups, groups_label, get_count1, m, y);
-										get_count += get_count1;
-										if (get_count1 == 0)
-											break;
-									}
-								}
-
-								//if can reach the ealge
-								if ((x == 0 || y == 0 || x == 18 || y == 18) && get_count>0)
-								{
-									has_reach_eage = 1;
-									//return;
-								}
-							}
-					}
-		}
-
-
-			if (get_count == 0)
-				break;
-	}
-
-	if (has_reach_eage)
+	int reach_boundary = 0;
+	struct broadcast_re * broadcast_result;
+	broadcast_result = add_broadcast_label(groups, qipan, op_type, groups_label, get_count, xx, yy);
+//
+//	for (int range = 1; range < 19; range++){
+//		get_count = 0;
+//		for (int x = 0; x < 19; x++){
+//			for (int y = 0; y < 19; y++)
+//				for (int i = 0; i < 19; i++)
+//					for (int j = 0; j < 19; j++)
+//					{
+//						if ((abs(x - i) == range && abs(j - y) <= range || abs(x - i) <= range  && abs(j - y) == range))
+//							if ((abs(x - i) == range && j == y || i == x  && abs(j - y) == range)
+//								&& (qipan[i + 19 * j] == mytype || qipan[x + 19 * y] == 0) && groups[i + 19 * j] == groups_label)
+//							{
+//								
+//								groups[x + 19 * y] = groups_label;
+//								get_count++;
+//								//check near by
+//								struct broadcast_re * broadcast_result;
+//								broadcast_result = add_broadcast_label(groups, qipan, op_type, groups_label, get_count, x, y);
+///*
+//								if (abs(x - i) == range){
+//									for (int m = y; abs(m - y) <= range; m--){
+//										int get_count1 = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, x, m);
+//										get_count += get_count1;
+//										if (get_count1 == 0)
+//											break;
+//									}
+//								}
+//								if (abs(y - j) == range){
+//									for (int m = x; abs(m - x) <= range; m--){
+//										int get_count1 = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, m, y);
+//										get_count += get_count1;
+//										if (get_count1 == 0)
+//											break;
+//									}
+//								}*/
+//
+//								if (broadcast_result->reach_boundary)
+//								{
+//									reach_boundary = 1;
+//								}
+//
+//								//if can reach the ealge
+//								//if ((x == 0 || y == 0 || x == 18 || y == 18) && get_count>0)
+//								//{
+//								//	reach_boundary = 1;
+//								//	//return;
+//								//}
+//							}
+//					}
+//		}
+//
+//
+//			if (get_count == 0)
+//				break;
+//	}
+//
+	reach_boundary = broadcast_result->reach_boundary;
+	if (reach_boundary)
 		groups_area[groups_label] = get_count;
 	else
 		groups_area[groups_label] = 0;
 
-	for (int i = 0; i < 361; i++)
-	{
-		if (groups[i  ] = 500)
-			groups[i  ] = 0;
-	}
+	//for (int i = 0; i < 361; i++)
+	//{
+	//	if (groups[i  ] = 500)
+	//		groups[i  ] = 0;
+	//}
 
 }
-template <typename Dtype>
+//template <typename Dtype>
 int calc_area(int * groups_area)
 {
 	int sum = 0;
-	for (i = 0; i < 361; i++)
+	for (int i = 0; i < 361; i++)
 	{
 		if (groups_area[i] > 0)
 			sum += groups_area[i];
@@ -865,11 +915,11 @@ int calc_area(int * groups_area)
 	return sum;
 }
 
-template <typename Dtype>
+//template <typename Dtype>
 int get_max_label(int * groups)
 {
 	int max = 0;
-	for (i = 0; i < 361; i++)
+	for (int i = 0; i < 361; i++)
 	{
 		if (groups[i] > max)
 			max = groups[i];
@@ -877,12 +927,12 @@ int get_max_label(int * groups)
 	return max;
 }
 
-template <typename Dtype>
+//template <typename Dtype>
 float qipan_value(const char * qipan, bool show_result)
 {
 
 	//struct chessline chessline[LINENUM], chessline1[LINENUM], chessline2[LINENUM];
-	int groups1[361], groups2[361], groups_area1[361], groups_area1[361];
+	int groups1[361], groups2[361], groups_area1[361], groups_area2[361];
 	memset(groups1, 0, 361);
 	memset(groups2, 0, 361);
 	memset(groups_area1, 0, 361);
@@ -895,12 +945,12 @@ float qipan_value(const char * qipan, bool show_result)
 			if (qipan[x + y * 19] == 1)
 			{
 				int max_label = get_max_label(groups1) + 1;
-				broadcast_label(groups1, groups_area1, qipan, x, y, max_label);
+				broadcast_label(groups1, groups_area1, qipan, x, y,1, max_label);
 			}
 			else if (qipan[x + y * 19] == 2)//mine
 			{
 				int max_label = get_max_label(groups2) + 1;
-				broadcast_label(groups2, groups_area2, qipan, x, y, max_label);
+				broadcast_label(groups2, groups_area2, qipan, x, y,2, max_label);
 			}
 			else if (qipan[x + y * 19] == 0)
 			{
@@ -916,11 +966,12 @@ float qipan_value(const char * qipan, bool show_result)
 		LOG_IF(INFO, Caffe::root_solver()) << "area2" << area2;
 		LOG_IF(INFO, Caffe::root_solver()) << "area2 - area1" << area2 - area1;
 	}
-	return area2 - area1;
+
+	return area2+4 - (area1-4);
 }
 
-template <typename Dtype>
-float calc_value(int xx, int yy, const char * qipan)
+//template <typename Dtype>
+/*float calc_value(int xx, int yy, const char * qipan)
 {
 	float Qipan_val = qipan_value(qipan);
 	float max_val = 0;
@@ -941,8 +992,8 @@ float calc_value(int xx, int yy, const char * qipan)
 		}
 	}
 
-	return qipan_value();
-}
+	return qipan_value(qipan);
+}*/
 
 template <typename Dtype>
 void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
@@ -1004,7 +1055,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 					data[i] = 0;
 				}
 
-				int winarea = qipan_value(qipan,1);
+				int winarea = qipan_value(qipan,true);
 
 				memset(tpixels, 0, 2000);
 				int spos1 = 0;
@@ -1067,12 +1118,12 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				//empty
 				if (qipan_temp[xx + 19 * yy] == 0){
 					qipan_temp[xx + 19 * yy] = 2;
-					int winarea = qipan_value(qipan_temp, 0);
+					int winarea = qipan_value(qipan_temp, false);
 					qipan_area[xx + 19 * yy] = winarea;
 					if (winarea > 0)
-						data[i] += winarea;
+						data[xx + 19 * yy] += winarea;
 					else
-						data[i] -= winarea;
+						data[xx + 19 * yy] -= winarea;
 					if (winarea > max_area)
 					{
 						max_area_x = xx;
@@ -1082,7 +1133,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				}
 			}
 
-		LOG_IF(INFO, Caffe::root_solver()) << " max win area: " << winarea
+		LOG_IF(INFO, Caffe::root_solver()) << " max win area: " << max_area
 			<< " x " << max_area_x
 			<< " y " << max_area_y;
 
