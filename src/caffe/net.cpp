@@ -670,7 +670,7 @@ void Net<Dtype>::InputDebugInfo(const int input_id) {
 template <typename Dtype>
 Dtype * get_mdata(const Blob<Dtype>& blob)
 {
-	Dtype * temp;
+	Dtype * temp=nullptr;
 	if (!blob.data()) { return temp; }
 	switch (blob.data()->head()) {
 	case SyncedMemory::HEAD_AT_CPU:
@@ -711,6 +711,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 	int tmp = 0;
 	static bool init = false;
 	static char  qipan[361];
+	static int loop_cnt = 0;
 
 
   for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
@@ -751,20 +752,28 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 		{
 			init = true;
 			mdata1 = get_mdata(blob);
-
-			memset(tpixels, 0, 2000);
-			int spos1 = 0;
-			for (int spos = 0; spos < 19 * 38; spos++){
-				if (round(mdata1[spos]) > 0){
-					qipan[spos / 38 * 19 + spos % 19] = 1;
-					tpixels[spos1++] = (uint8_t)((uint8_t)(spos % 19) + 'a');//xx
-					tpixels[spos1++] = (uint8_t)((uint8_t)(spos / 38) + 'a');//yy
-
-					tpixels[spos1++] = ';';
+			if (mdata1 != nullptr){
+				//memset(qipan, 0, 361);
+				//memset(data, 0, 361);
+				for (int i; i < 361; i++)
+				{
+					qipan[i] = 0;
+					data[i] = 0;
 				}
+				memset(tpixels, 0, 2000);
+				int spos1 = 0;
+				for (int spos = 0; spos < 19 * 38; spos++){
+					if (round(mdata1[spos]) > 0){
+						qipan[spos / 38 * 19 + spos % 19] = 1;
+						tpixels[spos1++] = (uint8_t)((uint8_t)(spos % 19) + 'a');//xx
+						tpixels[spos1++] = (uint8_t)((uint8_t)(spos / 38) + 'a');//yy
+
+						tpixels[spos1++] = ';';
+					}
+				}
+				tpixels[spos1++] = 0;
+				//LOG(INFO) << "spos1:" << spos1 << " tpixels:" << tpixels;
 			}
-			tpixels[spos1++] = 0;
-			//LOG(INFO) << "spos1:" << spos1 << " tpixels:" << tpixels;
 		}
 	}
 
@@ -775,6 +784,10 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 			//LOG_IF(INFO, Caffe::root_solver()) << "check data";
 			LOG_IF(INFO, Caffe::root_solver()) << " start sum";
 			mdata = get_mdata(blob);
+			if (mdata1 == nullptr){
+				LOG_IF(INFO, Caffe::root_solver()) << " get GPU data error ";
+				return;
+			}
 			for (int i = 0; i < blob.count(); i++)
 			{
 				//const int n, const float* x
@@ -829,7 +842,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 			//<< "Layer " << layer_names_[layer_id]
 			//<< ", top blob " << blob_name
 			<< " data_abs_val_mean: " << data_abs_val_mean;
-
+		loop_cnt++;
 		for (int i = 0; i < 70; i++)
 		{
 			int xx = (order1[i]) % 19 + 1;
@@ -840,12 +853,57 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 			else
 				aa = xx-9 + 'J';
 
+			if (i == 0 )
+				LOG_IF(INFO, Caffe::root_solver()) << " MOVE: [" << aa << yy << "];";
+			if (i == 0 ){
+				try{
+					std::ifstream sgffile("C:\\in.sgf", std::ios::in | std::ios::binary);
+					if (sgffile){
+						char sgfstring[5000];
+						memset(sgfstring, 0, 5000);
+						sgffile.read(sgfstring, 5000);
+						string sgfstring1 = sgfstring;
+						int pos = sgfstring1.find_last_of(']');
+						int pos1 = pos;
+						if (pos != -1){
+							pos++;
+							sgfstring[pos++] = ';';
+							if (sgfstring[pos1-4]=='W')
+								sgfstring[pos++] = 'B';
+							else
+								sgfstring[pos++] = 'W';
+							sgfstring[pos++] = '[';
+							sgfstring[pos++] = (order1[i]) % 19 + 'a' ;
+							sgfstring[pos++] = (order1[i]) / 19 + 'a';
+							sgfstring[pos++] = ']';
+							sgfstring[pos++] = ')';
+							sgfstring[pos++] = '\r';
+							sgfstring[pos++] = '\n';
+							sgfstring[pos++] = 0;
+							std::ofstream sgffile2("C:\\AIout.sgf", std::ios::out | std::ios::binary);
+							sgffile2.write(sgfstring, strlen(sgfstring));//11
+							LOG_IF(INFO, Caffe::root_solver()) << "write C:\\AIout.sgf" ;
+						}
+						else
+						{
+							LOG_IF(INFO, Caffe::root_solver()) << "not found C:\\AIout.sgf";
+						}
+					}
+				}
+				catch (int e){
+
+					LOG_IF(INFO, Caffe::root_solver()) << "error open C:\\in.sgf";
+				}
+			}
+
 			LOG_IF(INFO, Caffe::root_solver())
-				<< " data: " << (float)data[order1[i]] << " " << (float)data[order1[i]] * 100 / sum << "% "
+				<< "loop:" << loop_cnt << " ord:" << i
+				<< " sum: " <<  data[order1[i]] << " " << (float)data[order1[i]] * 100 / sum << "% "
 				//<< "order:" << order[i]
-				<< " P:" << aa <<" "<<yy
+				<< " M:" << aa <<" "<<yy
 				<< " xx " << (int)round(order1[i]) % 19 + 1
 				<< " yy " << (int)round(order1[i]) / 19 + 1;
+
 		}
 		//delete[] order1;
 	}

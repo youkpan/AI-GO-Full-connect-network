@@ -536,23 +536,26 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 
 					xx = GOfile[mpos + 1] - 'a';
 					yy = GOfile[mpos + 2] - 'a';
+					int xxx = xx;
+					int yyy = yy;
 
 					if (xx < 0 || xx>18 || yy < 0 || yy >18){
 						LOG(INFO) << "not found xx yy";
 						break;
 					}
 
+					if (isdebug)
+						LOG(INFO) << "xx" << xx << "yy" << yy;
 
 					
 					if (GOfile[mpos -1] != win){
 
 						pixels[  yy*cols1 + xx ] = 1;
-						for (int j; j < 361; j++)
-						{
-							int x = j % (cols1 / 2);
-							int y = j / rows1 / 2;
-							pixels[(y + rows1 / 2)*cols1 + x ] = 0;
-						}
+						for (int x=0; x < 19; x++)
+							for (int y = 0; y < 19; y++)
+							{
+								pixels[(y + rows1 / 2)*cols1 + x ] = 0;
+							}
 
 						pixels[(yy + rows1 / 2)* cols1 + xx ] = 1;
 						spos = sline.find_first_of("[", mpos2 + 1);
@@ -581,15 +584,32 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 						{
 							if ((start_num == 1 || start_num == 2))
 							{
+								int range = 9;
+								memset(tpixels, 0, rows1*cols1);
+								if (xxx < range)
+									xxx = range  ;
+								if (yyy < range)
+									yyy = range  ;
+								int xstart = xxx - range;
+								int xend = xxx + range;
+								int ystart = yyy - range;
+								int yend = yyy + range;
+								if (xstart < 2)
+									xstart = 2;
+								if (xend > 16)
+									xend = 16;
+								if (ystart < 2)
+									ystart = 2;
+								if (yend > 16)
+									yend = 16;
+
 								xx = 10;
 								yy = 10;
-								memset(tpixels, 0, rows1*cols1);
-								
-								for (int ii = 0; ii < cols1/2; ii++)
-									for (int jj = 0; jj < rows1/2; jj++)
+								for (int ii = xstart ; ii < cols1 / 2 && (ii< xend); ii ++)
+									for (int jj = ystart; jj<yend && jj < rows1 / 2; jj++)
 
-										for (int ii2 = cols1 / 2; ii2 < cols1; ii2++)
-											for (int jj2 = 0; jj2 < rows1 / 2; jj2++)
+										for (int ii2 = xstart + cols1 / 2; (ii2< xend + cols1 / 2) && ii2 < cols1; ii2++)
+											for (int jj2 = ystart; jj2<yend && jj2 < rows1 / 2; jj2++)
 												if (pixels[jj*cols1 + ii] ==0 && pixels[jj2*cols1 + ii2 + cols1 / 2] ==0)
 												{
 													if (( ii2 % (cols1 / 2) == ii) && jj == jj2)
@@ -693,11 +713,11 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 					}
 					else if (*sline.substr(mpos - 1, mpos).c_str() == win)
 					{
+						
 						pixels[ yy*cols1 + xx + cols1/2] = 1;
-						for (int j; j < 361; j++)
+						for (int x = 0; x < 19; x++)
+							for (int y = 0; y < 19; y++)
 						{
-							int x = j % (cols1 / 2);
-							int y = j / rows1 / 2;
 							pixels[(y + rows1 / 2)*cols1 + x + cols1/2] = 0;
 						}
 						pixels[(yy + rows1 / 2)* cols1 + xx + cols1/2] = 1;

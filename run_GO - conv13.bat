@@ -1,1 +1,1 @@
-.\3rdparty\bin\caffe.exe train --solver=examples\GO\lenet_solver_conv.prototxt
+.\3rdparty\bin\caffe.exe train --solver=examples\GO\lenet_solver_conv13.prototxt
