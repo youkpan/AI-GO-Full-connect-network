@@ -964,10 +964,10 @@ float qipan_value(const char * qipan, bool show_result)
 	if (show_result){
 		LOG_IF(INFO, Caffe::root_solver()) << "area1" << area1;
 		LOG_IF(INFO, Caffe::root_solver()) << "area2" << area2;
-		LOG_IF(INFO, Caffe::root_solver()) << "area2 - area1" << area2 - area1;
+		LOG_IF(INFO, Caffe::root_solver()) << "area2 - area1 +7.5" << area2 - area1 +7.5;
 	}
-
-	return area2+4 - (area1-4);
+	// - (area1)
+	return (area2 + 6.5)/2 - 180.5;
 }
 
 //template <typename Dtype>
@@ -1090,14 +1090,14 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 			{
 				//const int n, const float* x
 				//mdata.next;
-				
+
 				fdata = (float)mdata[i];
 				data[(int)round(fdata)]++;
 			}
 			//data_abs_val_mean = (int)round(mdata[blob.count()-1]);
 		}
 		else{
-			 Dtype data_abs_val_mean = (blob.asum_data() / blob.count());
+			Dtype data_abs_val_mean = (blob.asum_data() / blob.count());
 			data[(int)round(data_abs_val_mean)] ++;
 		}
 
@@ -1120,10 +1120,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 					qipan_temp[xx + 19 * yy] = 2;
 					int winarea = qipan_value(qipan_temp, false);
 					qipan_area[xx + 19 * yy] = winarea;
-					if (winarea > 0)
-						data[xx + 19 * yy] += winarea;
-					else
-						data[xx + 19 * yy] -= winarea;
+
 					if (winarea > max_area)
 					{
 						max_area_x = xx;
@@ -1133,6 +1130,11 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				}
 			}
 
+		for (int i = 0; i < 361; i++)
+		{
+			if (qipan_area[i] >= max_area)
+				data[i] += 1;
+		}
 		LOG_IF(INFO, Caffe::root_solver()) << " max win area: " << max_area
 			<< " x " << max_area_x
 			<< " y " << max_area_y;
