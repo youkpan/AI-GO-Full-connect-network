@@ -15,7 +15,7 @@ copy C:\in.sgf F:\caffe-windows\examples\GO\test-run\imbai.sgf /Y
 F:\caffe-windows\examples\GO\convert_GO_data.exe  F:\caffe-windows\examples\GO\test-run 1 19999 Z:\GO-test-run-leveldb --backend=leveldb
 
 
-.\3rdparty\bin\caffe.exe test --debug=true --iterations=41 --weights=examples/GO/lenet_7x7_iter_22000.caffemodel --model=examples/GO/GO_demo_LeNet_test_pool_run.prototxt 2> Z:\AIout.txt 
+.\3rdparty\bin\caffe.exe test --debug=true --iterations=4 --weights=examples/GO/lenet_7x7_iter_33796.caffemodel --model=examples/GO/GO_demo_LeNet_test_pool_run.prototxt 2> Z:\AIout.txt 
 ;-gpu 0 
 ;OUT OK 
  

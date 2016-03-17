@@ -41,7 +41,7 @@ layer {
     lr_mult: 2
   }
   convolution_param {
-    num_output: 48
+    num_output: 64
     kernel_size: 7
     pad: 3
     stride: 1
@@ -60,7 +60,7 @@ layer {
   top: "pool1"
   pooling_param {
     pool: MAX
-    kernel_size: 1
+    kernel_size: 2
     stride: 1
   }
 }

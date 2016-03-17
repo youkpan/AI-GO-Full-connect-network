@@ -584,36 +584,51 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 						{
 							if ((start_num == 1 || start_num == 2))
 							{
-								int range = 9;
+								int range = 10;
 								memset(tpixels, 0, rows1*cols1);
-								if (xxx < range)
-									xxx = range  ;
-								if (yyy < range)
-									yyy = range  ;
-								int xstart = xxx - range;
-								int xend = xxx + range;
-								int ystart = yyy - range;
-								int yend = yyy + range;
-								if (xstart < 2)
-									xstart = 2;
-								if (xend > 16)
-									xend = 16;
-								if (ystart < 2)
-									ystart = 2;
-								if (yend > 16)
-									yend = 16;
-
-								xx = 10;
-								yy = 10;
+								//if (xxx < range)
+								//	xxx = range  ;
+								//if (yyy < range)
+								//	yyy = range  ;
+								int xstart = 1;// xxx - range;
+								int xend = 18;// xxx + range;
+								int ystart = 1;// yyy - range;
+								int yend = 18;// yyy + range;
+								//if (xstart < 1)
+								//	xstart = 1;
+								//if (xend > 16)
+								//	xend = 16;
+								//if (ystart < 1)
+								//	ystart = 1;
+								//if (yend > 16)
+								//	yend = 16;
+								LOG(INFO) << "xxx:" << xxx << " yyy:" << yyy << " range:" << range;
+								//xx = 10;
+								//yy = 10;
+								for (range = 1; range < 19; range++)
 								for (int ii = xstart ; ii < cols1 / 2 && (ii< xend); ii ++)
 									for (int jj = ystart; jj<yend && jj < rows1 / 2; jj++)
 
-										for (int ii2 = xstart + cols1 / 2; (ii2< xend + cols1 / 2) && ii2 < cols1; ii2++)
+										for (int ii2 = xstart ; (ii2< xend ) && ii2 < cols1/2; ii2++)
 											for (int jj2 = ystart; jj2<yend && jj2 < rows1 / 2; jj2++)
 												if (pixels[jj*cols1 + ii] ==0 && pixels[jj2*cols1 + ii2 + cols1 / 2] ==0)
 												{
+													//LOG(INFO) << "ii:" << ii << " jj:" << jj;
+													//LOG(INFO) << "ii2:" << ii2 << " jj2:" << jj2;
+													if(!( (abs(ii - xxx) == range && abs(jj - yyy)<=range)
+														|| (abs(ii - xxx) <= range && abs(jj - yyy)==range) )
+														)
+														continue;
+													if (!((abs(ii2 - xxx) == range && abs(jj2 - yyy)<=range)
+														|| (abs(ii2 - xxx) <= range && abs(jj2 - yyy) == range))
+														)
+														continue;
+													
+
 													if (( ii2 % (cols1 / 2) == ii) && jj == jj2)
 														continue;
+													//LOG(INFO) << "in range:" ;
+
 													memcpy(tpixels, pixels, rows1*cols1);
 
 													tpixels[jj*cols1 + ii] = 1;

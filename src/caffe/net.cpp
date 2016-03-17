@@ -806,11 +806,18 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 		{
 			sum += data[i];
 			order1[i] = i;
-			order[i] = data[i];
+			
 			//if (round(mdata1[i / 38 + i % 19]) > 0 || round(mdata1[i / 38 + i % 19 + 19]) > 0)
 			if (qipan[i]>0)
 			{
 				order[i] = 0;
+			}
+			else
+			{
+				if (data[i] != 0)
+					order[i] = data[i];
+				else
+					data[i] = 1;
 			}
 		}
 
