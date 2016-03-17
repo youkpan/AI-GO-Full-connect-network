@@ -630,7 +630,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 													//LOG(INFO) << "in range:" ;
 
 													memcpy(tpixels, pixels, rows1*cols1);
-													pixels[(yy + rows1 / 2)* cols1 + xx] = 0;
+													tpixels[(yyy + rows1 / 2)* cols1 + xxx] = 0;
 													tpixels[jj*cols1 + ii] = 1;
 													tpixels[jj2*cols1 + ii2 + cols1 / 2] = 1;
 													label = jj*cols1 + ii;
