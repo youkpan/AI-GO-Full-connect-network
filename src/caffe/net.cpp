@@ -984,9 +984,9 @@ float qipan_value(const char * qipan, bool show_result)
 	int area2 = calc_area(groups_area2);
 
 	if (show_result){
-		LOG_IF(INFO, Caffe::root_solver()) << "area1" << area1;
-		LOG_IF(INFO, Caffe::root_solver()) << "area2" << area2;
-		LOG_IF(INFO, Caffe::root_solver()) << "area2 - area1 +7.5" << area2 - area1 +7.5;
+		LOG_IF(INFO, Caffe::root_solver()) << "area1 " << area1;
+		LOG_IF(INFO, Caffe::root_solver()) << "area2 " << area2;
+		LOG_IF(INFO, Caffe::root_solver()) << "area2 - area1 + 6.5 " << area2 - area1 + 6.5;
 	}
 	// - (area1)
 	return (area2 + 6.5)/2 - 180.5;
@@ -1094,7 +1094,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 
 				memcpy(qipan_temp, qipan, 361);
 				int winarea = qipan_value(qipan_temp, true);
-				LOG_IF(INFO, Caffe::root_solver()) << "winarea" << winarea;
+				LOG_IF(INFO, Caffe::root_solver()) << " winarea " << winarea;
 
 				//LOG(INFO) << "spos1:" << spos1 << " tpixels:" << tpixels;
 			}

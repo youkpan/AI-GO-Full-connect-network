@@ -582,104 +582,13 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 
 						if (start_ > 30 || (start_num == 1 || start_num == 2))
 						{
-							if ((start_num == 1 || start_num == 2))
-							{
-								int range = 10;
-								memset(tpixels, 0, rows1*cols1);
-								//if (xxx < range)
-								//	xxx = range  ;
-								//if (yyy < range)
-								//	yyy = range  ;
-								int xstart = 1;// xxx - range;
-								int xend = 18;// xxx + range;
-								int ystart = 1;// yyy - range;
-								int yend = 18;// yyy + range;
-								//if (xstart < 1)
-								//	xstart = 1;
-								//if (xend > 16)
-								//	xend = 16;
-								//if (ystart < 1)
-								//	ystart = 1;
-								//if (yend > 16)
-								//	yend = 16;
-								LOG(INFO) << "xxx:" << xxx << " yyy:" << yyy << " range:" << range;
-								//xx = 10;
-								//yy = 10;
-								for (range = 1; range < 19; range++)
-								for (int ii = xstart ; ii < cols1 / 2 && (ii< xend); ii ++)
-									for (int jj = ystart; jj<yend && jj < rows1 / 2; jj++)
 
-										for (int ii2 = xstart ; (ii2< xend ) && ii2 < cols1/2; ii2++)
-											for (int jj2 = ystart; jj2<yend && jj2 < rows1 / 2; jj2++)
-												if (pixels[jj*cols1 + ii] ==0 && pixels[jj2*cols1 + ii2 + cols1 / 2] ==0)
-												{
-													//LOG(INFO) << "ii:" << ii << " jj:" << jj;
-													//LOG(INFO) << "ii2:" << ii2 << " jj2:" << jj2;
-													if(!( (abs(ii - xxx) == range && abs(jj - yyy)<=range)
-														|| (abs(ii - xxx) <= range && abs(jj - yyy)==range) )
-														)
-														continue;
-													//if (!((abs(ii2 - xxx) == range && abs(jj2 - yyy)<=range)
-													//	|| (abs(ii2 - xxx) <= range && abs(jj2 - yyy) == range))
-													//	)
-													//	continue;
-													
-
-													if (( ii2 % (cols1 / 2) == ii) && jj == jj2)
-														continue;
-													//LOG(INFO) << "in range:" ;
-
-													memcpy(tpixels, pixels, rows1*cols1);
-													tpixels[(yyy + rows1 / 2)* cols1 + xxx] = 0;
-													tpixels[jj*cols1 + ii] = 1;
-													tpixels[jj2*cols1 + ii2 + cols1 / 2] = 1;
-													label = jj*cols1 + ii;
-													datum.set_data(tpixels, rows1*cols1);
-
-									datum.set_label(label);
-									sprintf_s(key_cstr, kMaxKeyLength, "%09d", item_id);
-									item_id++;
-									datum.SerializeToString(&value);
-									string keystr(key_cstr);
-
-									// Put in db
-									if (db_backend == "leveldb") {  // leveldb
-										batch->Put(keystr, value);
-									}
-									else if (db_backend == "lmdb") {  // lmdb
-										mdb_data.mv_size = value.size();
-										mdb_data.mv_data = reinterpret_cast<void*>(&value[0]);
-										mdb_key.mv_size = keystr.size();
-										mdb_key.mv_data = reinterpret_cast<void*>(&keystr[0]);
-										CHECK_EQ(mdb_put(mdb_txn, mdb_dbi, &mdb_key, &mdb_data, 0), MDB_SUCCESS)
-											<< "mdb_put failed";
-									}
-									else {
-										LOG(FATAL) << "Unknown db backend " << db_backend;
-									}
-
-									if (++count % 1000 == 0) {
-										// Commit txn
-										if (db_backend == "leveldb") {  // leveldb
-											db->Write(leveldb::WriteOptions(), batch);
-											delete batch;
-											batch = new leveldb::WriteBatch();
-										}
-										else if (db_backend == "lmdb") {  // lmdb
-											CHECK_EQ(mdb_txn_commit(mdb_txn), MDB_SUCCESS)
-												<< "mdb_txn_commit failed";
-											CHECK_EQ(mdb_txn_begin(mdb_env, NULL, 0, &mdb_txn), MDB_SUCCESS)
-												<< "mdb_txn_begin failed";
-										}
-										else {
-											LOG(FATAL) << "Unknown db backend " << db_backend;
-										}
-									}
-								}
-							}
 							if (isdebug)
 								LOG(INFO) << "start write db";
-							label = yy * 19 + xx;
+							if (start_num == 1 || start_num == 2)
+								label = yyy * 19 + xxx;
+							else
+								label = yy * 19 + xx;
 							if (isdebug)
 								LOG(INFO) << "label xx  " << GOfile[spos + 1] << " yy " << GOfile[spos + 2];
 
@@ -721,6 +630,119 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 								}
 								else {
 									LOG(FATAL) << "Unknown db backend " << db_backend;
+								}
+							}
+
+							if ((start_num == 1 || start_num == 2))
+							{
+								int range = 10;
+								memset(tpixels, 0, rows1*cols1);
+								//if (xxx < range)
+								//	xxx = range  ;
+								//if (yyy < range)
+								//	yyy = range  ;
+								int xstart = 1;// xxx - range;
+								int xend = 18;// xxx + range;
+								int ystart = 1;// yyy - range;
+								int yend = 18;// yyy + range;
+								bool inited = true;
+								//if (xstart < 1)
+								//	xstart = 1;
+								//if (xend > 16)
+								//	xend = 16;
+								//if (ystart < 1)
+								//	ystart = 1;
+								//if (yend > 16)
+								//	yend = 16;
+								LOG(INFO) << "xxx:" << xxx << " yyy:" << yyy << " range:" << range;
+								//xx = 10;
+								//yy = 10;
+								for (range = 1; range < 19; range++)
+								for (int ii = xstart ; ii < cols1 / 2 && (ii< xend); ii ++)
+									for (int jj = ystart; jj<yend && jj < rows1 / 2; jj++)
+
+										for (int ii2 = xstart ; (ii2< xend ) && ii2 < cols1/2; ii2++)
+											for (int jj2 = ystart; jj2<yend && jj2 < rows1 / 2; jj2++)
+												if (pixels[jj*cols1 + ii] == 0 && pixels[jj2*cols1 + ii2 + cols1 / 2] == 0)
+												{
+													//LOG(INFO) << "ii:" << ii << " jj:" << jj;
+													//LOG(INFO) << "ii2:" << ii2 << " jj2:" << jj2;
+													if (!((abs(ii - xxx) == range && abs(jj - yyy) <= range)
+														|| (abs(ii - xxx) <= range && abs(jj - yyy) == range))
+														)
+														continue;
+													//if (!((abs(ii2 - xxx) == range && abs(jj2 - yyy)<=range)
+													//	|| (abs(ii2 - xxx) <= range && abs(jj2 - yyy) == range))
+													//	)
+													//	continue;
+
+
+													if ((ii2 % (cols1 / 2) == ii) && jj == jj2)
+														continue;
+													//LOG(INFO) << "in range:" ;
+
+													
+													if (!inited)
+													{
+														inited = true;
+														memcpy(tpixels, pixels, rows1*cols1);
+														//tpixels[(yyy + rows1 / 2)* cols1 + xxx] = 0;
+														for (int i = rows1*cols1 / 2; i < rows1*cols1; i++)
+														{
+															tpixels[i] = 0;
+														}
+														tpixels[jj*cols1 + ii] = 1;
+														tpixels[(jj + rows1 / 2)*cols1 + ii] = 1;
+														tpixels[jj2*cols1 + ii2 + cols1 / 2] = 1;
+														tpixels[(jj2 + rows1 / 2)* cols1 + ii2 + cols1 / 2] = 1;
+
+														label = jj2 * 19 + ii2 + 19;
+														datum.set_data(tpixels, rows1*cols1);
+													}
+													else{
+														label = yyy * 19 + xxx + 19;
+														datum.set_data(tpixels, rows1*cols1);
+													}
+
+									datum.set_label(label);
+									sprintf_s(key_cstr, kMaxKeyLength, "%09d", item_id);
+									item_id++;
+									datum.SerializeToString(&value);
+									string keystr(key_cstr);
+
+									// Put in db
+									if (db_backend == "leveldb") {  // leveldb
+										batch->Put(keystr, value);
+									}
+									else if (db_backend == "lmdb") {  // lmdb
+										mdb_data.mv_size = value.size();
+										mdb_data.mv_data = reinterpret_cast<void*>(&value[0]);
+										mdb_key.mv_size = keystr.size();
+										mdb_key.mv_data = reinterpret_cast<void*>(&keystr[0]);
+										CHECK_EQ(mdb_put(mdb_txn, mdb_dbi, &mdb_key, &mdb_data, 0), MDB_SUCCESS)
+											<< "mdb_put failed";
+									}
+									else {
+										LOG(FATAL) << "Unknown db backend " << db_backend;
+									}
+
+									if (++count % 1000 == 0) {
+										// Commit txn
+										if (db_backend == "leveldb") {  // leveldb
+											db->Write(leveldb::WriteOptions(), batch);
+											delete batch;
+											batch = new leveldb::WriteBatch();
+										}
+										else if (db_backend == "lmdb") {  // lmdb
+											CHECK_EQ(mdb_txn_commit(mdb_txn), MDB_SUCCESS)
+												<< "mdb_txn_commit failed";
+											CHECK_EQ(mdb_txn_begin(mdb_env, NULL, 0, &mdb_txn), MDB_SUCCESS)
+												<< "mdb_txn_begin failed";
+										}
+										else {
+											LOG(FATAL) << "Unknown db backend " << db_backend;
+										}
+									}
 								}
 							}
 

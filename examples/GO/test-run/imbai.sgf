@@ -1,7 +1,8 @@
-(;AP[GoGui:1.4.9]CA[UTF-8]FF[4]MULTIGOGM[1]
-PB[GoUctPlayer]GM[1]
-;B[jj];W[gm];B[pp];W[aa];B[dp];W[ba];B[pd];W[mc];B[ni];W[kk]
-;B[cj];W[bm];B[kj];W[hm];B[jk];W[go];B[de];W[bc];B[fq];W[ca]
-;B[jl];W[gq];B[fp];W[da];B[gp];W[ea];B[gj];W[dm];B[qk];W[no]
-;B[em];W[bs];B[dl];W[bq];B[cm];W[cq];B[oq];W[fa];B[pn];W[ga]
-;B[ho])
+(;AP[GoGui:1.4.9]CA[UTF-8]
+DT[2016-03-18]FF[4]
+PB[Fuego]
+PW[Fuego]GM[1]KM[7.5]
+;B[pp];W[pd];B[cp];W[dd];B[cf];W[fc];B[dj];W[fq];B[dq];W[iq]
+;B[kq];W[fo];B[gp];W[fp];B[dm];W[io];B[qf];W[qh];B[jp];W[ip]
+;B[qc];W[qd];B[pc];W[od];B[rd];W[re];B[rc];W[qe];B[nc];W[nd]
+;B[mc];W[md];B[ld];W[le];B[kd];W[ke];B[je])
