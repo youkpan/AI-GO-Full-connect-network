@@ -1040,11 +1040,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 	Dtype * mdata;
 	Dtype * mdata1;
 	float fdata;
-	//LOG_IF(INFO, Caffe::root_solver())
-	//	<< "    [Forward] "
-	//	<< "Layer " << layer_names_[layer_id]
-	//	<< "Layer id " << layer_id
-	//	<< ", top blob " << blob_name << " size " << blob.count();
+
 	//[Forward] Layer GOLayer id 0, top blob data size 4115400
 	// [Forward] Layer GOLayer id 0, top blob label size 5700
  /*Forward] Layer label_GO_1_splitLayer id 1, top blob label_GO_1_split_0 size 5700
@@ -1269,8 +1265,14 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 		}
 	}
 
-	if (blob_name == "label")
+	if (blob_name == "ip2")
 	{
+		//LOG_IF(INFO, Caffe::root_solver())
+		//	<< "    [Forward] "
+		//	<< "Layer " << layer_names_[layer_id]
+		//	<< "Layer id " << layer_id
+		//	<< ", top blob " << blob_name << " size " << blob.count();
+
 		if (blob.count() > 1)
 		{
 			//LOG_IF(INFO, Caffe::root_solver()) << "check data";
@@ -1280,13 +1282,37 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				LOG_IF(INFO, Caffe::root_solver()) << " get GPU data error ";
 				return;
 			}
+
+			double min_data = 100,result_sum=0;
+			int data_idx = 0;
 			for (int i = 0; i < blob.count(); i++)
 			{
 				//const int n, const float* x
 				//mdata.next;
 
-				fdata = (float)mdata[i];
-				data[(int)round(fdata)]+=8;
+
+				fdata = (double)mdata[i];
+
+
+				if ( abs(fdata - 1.0) < min_data )
+				{
+					data_idx = i % 361;
+					min_data = abs(fdata - 1);
+				}
+
+				//result_sum += fdata;
+
+				if (i % 361 == 360)
+				{
+					//data_idx = round(result_sum );
+					data[data_idx] += 1;
+					//LOG_IF(INFO, Caffe::root_solver()) << "i:" << i << " data_idx: " << data_idx;
+					min_data = 100;
+					result_sum = 0;
+				}
+				//
+				//if (i<2000)
+				//	LOG_IF(INFO, Caffe::root_solver()) << "i:"<< i <<" fdata: " << fdata;
 			}
 			//data_abs_val_mean = (int)round(mdata[blob.count()-1]);
 		}
@@ -1295,25 +1321,29 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 			data[(int)round(data_abs_val_mean)] ++;
 		}
 
-		//data[max_area_x + 19 * max_area_y] += 5;
-		//data[min_area_x + 19 * min_area_y] += 5;
-
-		for (int i = 0; i < 361; i++)
-		{
-			//if (max_area > 0){
-			if (qipan_area[i] >= max_area && qipan_area[i]!=1000)
-					data[i] += 5  ;
-			//}
-
-			if (qipan_area[i] <= min_area && max_area - min_area >1)
-				data[i] += (max_area - min_area) * 5 ;
-		}
-
-
-
 		for (int i = 0; i < 361; i++)
 		{
 			sum += data[i];
+		}
+
+		//data[max_area_x + 19 * max_area_y] += 5;
+		//data[min_area_x + 19 * min_area_y] += 5;
+		//float value_win[361] = 0;
+		for (int i = 0; i < 361; i++)
+		{
+			//if (max_area > 0){
+			if (qipan_area[i] >= max_area && qipan_area[i] != 1000)
+				data[i] += sum * 0.25 / 0.4*(max_area - min_area) / 50;
+			//}
+
+			if (qipan_area[i] <= min_area && max_area - min_area >1)
+				data[i] += sum * 0.25 / 0.4*(max_area - min_area) / 50;
+		}
+
+
+		for (int i = 0; i < 361; i++)
+		{
+			//sum += data[i];
 			order1[i] = i;
 			
 			//if (round(mdata1[i / 38 + i % 19]) > 0 || round(mdata1[i / 38 + i % 19 + 19]) > 0)

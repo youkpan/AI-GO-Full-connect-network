@@ -696,7 +696,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 														tpixels[jj2*cols1 + ii2 + cols1 / 2] = 1;
 														tpixels[(jj2 + rows1 / 2)* cols1 + ii2 + cols1 / 2] = 1;
 
-														label = jj2 * 19 + ii2 + 19;
+														label = jj2 * 19 + ii2 ;
 														datum.set_data(tpixels, rows1*cols1);
 													//}
 													//else{
