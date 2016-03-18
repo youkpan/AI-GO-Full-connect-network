@@ -25,5 +25,6 @@ rem OUT OK
 rem out -> in
 rem "E:\MultiGo 4\gnugo.exe" -l C:\AIout.sgf -o C:\in.sgf --level 10
 type sgfcmd.txt | "C:\Program Files (x86)\Fuego\fuego.exe"
-pause
+ 
+
 goto start

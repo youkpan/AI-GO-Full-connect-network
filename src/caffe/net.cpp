@@ -1100,7 +1100,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				for (int spos = 19 * 38; spos < 38 * 38; spos++){
 					if (round(mdata1[spos]) > 0){
 						//op
-						if ((uint8_t)((spos % 38) / 19) == 1){
+						if ((uint8_t)((spos % 38) / 19) == 0){
 							op_y = spos / 38 - 19;
 							op_x = (spos % 19);
 						}
@@ -1121,8 +1121,8 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 
 				memcpy(qipan_temp, qipan, 361);
 
-				int max_area_x1 = 0;
-				int max_area_y1 = 0;
+				int min_area_x1 = 0;
+				int min_area_y1 = 0;
 
 				int max_area_x = 0;
 				int max_area_y = 0;
@@ -1141,10 +1141,10 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 							for (int yy1 = 0; yy1 < 19; yy1++)
 							{ 
 #ifdef SEARCH_MORE
-								xstart = xx2 - range;
-								ystart = yy2 - range;
-								xend = xx2 + range;
-								yend = yy2 + range;
+								xstart = op_x - range;
+								ystart = op_y - range;
+								xend = op_x + range;
+								yend = op_y + range;
 								if (xstart < 0)
 									xstart = 0;
 								if (ystart < 0)
@@ -1173,7 +1173,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 
 									qipan_temp[xx1 + 19 * yy1] = 1;
 #ifdef SEARCH_MORE
-									qipan_temp[xx + 19 * yy] = 2;
+									qipan_temp[xx + 19 * yy] = 1;
 #endif
 									qipan_temp[xx2 + 19 * yy2] = 2;
 									int winarea = qipan_value((const char *)qipan_temp, false);
@@ -1184,34 +1184,56 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 										{
 
 											qipan_area[max_area_x + 19 * max_area_y] = 1000;
-#ifdef SEARCH_MORE
-											qipan_area[max_area_x1 + 19 * max_area_y1] = 1000;
-#endif
+
 										}
 										max_area_x = xx2;
 										max_area_y = yy2;
-#ifdef SEARCH_MORE
-										max_area_x1 = xx;
-										max_area_x1 = yy;
-										qipan_area[xx + 19 * yy] = winarea;
-#endif
+
 										max_area = winarea;
 										qipan_area[xx2 + 19 * yy2] = winarea;
 										
 									}
 
-									if (winarea < min_area)
+									if (winarea <= min_area)
 									{
-										if (min_area != -400)
+										if (min_area_x == xx1 && min_area_y == yy1)
+										{
 											qipan_area[min_area_x + 19 * min_area_y] = 1000;
-										min_area_x = xx1;
-										min_area_y = yy1;
+											
+											min_area_x1 = xx1;
+											min_area_y1 = yy1;
+											min_area = winarea;
+											qipan_area[xx1 + 19 * yy1] = winarea;
+											continue;
+										}
+#ifdef SEARCH_MORE
+										if (min_area_x == xx && min_area_y == yy)
+										{
+											qipan_area[min_area_x1 + 19 * min_area_y1] = 1000;
+											min_area_x = xx;
+											min_area_y = yy;
+											qipan_area[xx + 19 * yy] = winarea;
+											continue;
+										}
+#endif
+										if (min_area != -400)
+										{
+											qipan_area[min_area_x1 + 19 * min_area_y1] = 1000;
+#ifdef SEARCH_MORE
+											qipan_area[min_area_x + 19 * min_area_y] = 1000;
+#endif
+										}
+										min_area_x1 = xx1;
+										min_area_y1 = yy1;
 										min_area = winarea;
 										qipan_area[xx1 + 19 * yy1] = winarea;
-									}
 #ifdef SEARCH_MORE
-								}
+										min_area_x = xx;
+										min_area_y = yy;
+										qipan_area[xx + 19 * yy] = winarea;
+									}
 #endif
+								}
 							}
 					}
 				LOG_IF(INFO, Caffe::root_solver()) << " max win area: " << max_area
@@ -1268,8 +1290,8 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 					data[i] += 5 * blob.count();
 			//}
 
-			if (qipan_area[i] <= min_area)
-				data[i] += 10 * blob.count();
+			if (qipan_area[i] <= min_area && max_area - min_area >1)
+				data[i] += (max_area - min_area) * 5 * blob.count();
 		}
 
 
