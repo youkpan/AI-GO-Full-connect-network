@@ -1,8 +1,7 @@
-(;AP[GoGui:1.4.9]CA[UTF-8]
-DT[2016-03-18]FF[4]
-PB[Fuego]
-PW[Fuego]GM[1]KM[7.5]
+(;FF[4]CA[UTF-8]AP[GoGui:1.4.9]
+KM[7.5]PB[Fuego]PW[Fuego]DT[2016-03-18]
 ;B[pp];W[pd];B[cp];W[dd];B[cf];W[fc];B[dj];W[fq];B[dq];W[iq]
 ;B[kq];W[fo];B[gp];W[fp];B[dm];W[io];B[qf];W[qh];B[jp];W[ip]
 ;B[qc];W[qd];B[pc];W[od];B[rd];W[re];B[rc];W[qe];B[nc];W[nd]
-;B[mc];W[md];B[ld];W[le];B[kd];W[ke];B[je])
+;B[mc];W[md];B[ld];W[le];B[kd];W[ke];B[je];W[jf];B[ie];W[if]
+;B[kf];W[kg];B[lf])

@@ -1029,6 +1029,9 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 	static char  qipan[361];
 	static int loop_cnt = 0;
 	char qipan_temp[361];
+	static int qipan_area[361];
+	static int max_area = -400;
+	static int min_area = 0;
 
   for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
     const Blob<Dtype>& blob = *top_vecs_[layer_id][top_id];
@@ -1090,12 +1093,138 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 						tpixels[spos1++] = ';';
 					}
 				}
+
+				int op_x = 0;
+				int op_y = 0;
+
+				for (int spos = 19 * 38; spos < 38 * 38; spos++){
+					if (round(mdata1[spos]) > 0){
+						//op
+						if ((uint8_t)((spos % 38) / 19) == 1){
+							op_y = spos / 38 - 19;
+							op_x = (spos % 19);
+						}
+					}
+				}
+
+				
+
+				LOG_IF(INFO, Caffe::root_solver()) << " op_x " << op_x   << " op_y" << op_y ;
+
 				tpixels[spos1++] = 0;
 
 				memcpy(qipan_temp, qipan, 361);
 				int winarea = qipan_value(qipan_temp, true);
 				LOG_IF(INFO, Caffe::root_solver()) << " winarea " << winarea;
 
+				setmem(qipan_area, 1000, 361);
+
+				memcpy(qipan_temp, qipan, 361);
+
+				int max_area_x1 = 0;
+				int max_area_y1 = 0;
+
+				int max_area_x = 0;
+				int max_area_y = 0;
+				
+				int min_area_x = 0;
+				int min_area_y = 0;
+
+				int xstart, ystart,xend ,yend;
+				int range = 2;
+
+				#define SEARCH_MORE
+
+				for (int xx2 = 0; xx2 < 19; xx2++)
+					for (int yy2 = 0; yy2 < 19; yy2++)
+						for (int xx1 = 0; xx1 < 19; xx1++)
+							for (int yy1 = 0; yy1 < 19; yy1++)
+							{ 
+#ifdef SEARCH_MORE
+								xstart = xx2 - range;
+								ystart = yy2 - range;
+								xend = xx2 + range;
+								yend = yy2 + range;
+								if (xstart < 0)
+									xstart = 0;
+								if (ystart < 0)
+									ystart = 0;
+								if (xend >18)
+									xend = 18;
+								if (yend >18)
+									yend = 18;
+
+								for (int xx = xstart; xx < xend; xx++)
+									for (int yy = ystart; yy < yend; yy++)
+							{
+#endif
+								//int xx = qipan[order[i]] % 19;
+								//int yy = (int)(qipan[order[i]] /19);
+
+								memcpy(qipan_temp, qipan, 361);
+								//empty
+								if (
+#ifdef SEARCH_MORE
+									qipan_temp[xx + 19 * yy] == 0 && 
+#endif
+									qipan_temp[xx1 + 19 * yy1] == 0
+									&& qipan_temp[xx2 + 19 * yy2] == 0){
+
+
+									qipan_temp[xx1 + 19 * yy1] = 1;
+#ifdef SEARCH_MORE
+									qipan_temp[xx + 19 * yy] = 2;
+#endif
+									qipan_temp[xx2 + 19 * yy2] = 2;
+									int winarea = qipan_value((const char *)qipan_temp, false);
+
+									if (winarea > max_area)
+									{
+										if (max_area != -400)
+										{
+
+											qipan_area[max_area_x + 19 * max_area_y] = 1000;
+#ifdef SEARCH_MORE
+											qipan_area[max_area_x1 + 19 * max_area_y1] = 1000;
+#endif
+										}
+										max_area_x = xx2;
+										max_area_y = yy2;
+#ifdef SEARCH_MORE
+										max_area_x1 = xx;
+										max_area_x1 = yy;
+										qipan_area[xx + 19 * yy] = winarea;
+#endif
+										max_area = winarea;
+										qipan_area[xx2 + 19 * yy2] = winarea;
+										
+									}
+
+									if (winarea < min_area)
+									{
+										if (min_area != -400)
+											qipan_area[min_area_x + 19 * min_area_y] = 1000;
+										min_area_x = xx1;
+										min_area_y = yy1;
+										min_area = winarea;
+										qipan_area[xx1 + 19 * yy1] = winarea;
+									}
+#ifdef SEARCH_MORE
+								}
+#endif
+							}
+					}
+				LOG_IF(INFO, Caffe::root_solver()) << " max win area: " << max_area
+					<< " x " << max_area_x
+					<< " y " << max_area_y;
+				LOG_IF(INFO, Caffe::root_solver()) << " min win area: " << min_area
+					<< " x " << min_area_x
+					<< " y " << min_area_y;
+				//for (int i = 0; i < 361; i++)
+				//{
+				//	LOG_IF(INFO, Caffe::root_solver()) << "qipan_area: " << i
+				//		<< " " << qipan_area[i];
+				//}
 				//LOG(INFO) << "spos1:" << spos1 << " tpixels:" << tpixels;
 			}
 			else
@@ -1129,43 +1258,21 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 			data[(int)round(data_abs_val_mean)] ++;
 		}
 
-
-		
-		memcpy(qipan_temp, qipan, 361);
-		int qipan_area[361];
-		static int max_area = -400;
-		static int max_area_x = 0;
-		static int max_area_y = 0;
-		for (int xx = 0; xx < 19; xx++)
-			for (int yy = 0; yy < 19; yy++)
-			{
-				//int xx = qipan[order[i]] % 19;
-				//int yy = (int)(qipan[order[i]] /19);
-
-				memcpy(qipan_temp, qipan, 361);
-				//empty
-				if (qipan_temp[xx + 19 * yy] == 0){
-					qipan_temp[xx + 19 * yy] = 2;
-					int winarea = qipan_value((const char *)qipan_temp, false);
-					qipan_area[xx + 19 * yy] = winarea;
-
-					if (winarea > max_area)
-					{
-						max_area_x = xx;
-						max_area_y = yy;
-						max_area = winarea;
-					}
-				}
-			}
+		//data[max_area_x + 19 * max_area_y] += 5;
+		//data[min_area_x + 19 * min_area_y] += 5;
 
 		for (int i = 0; i < 361; i++)
 		{
-			if (qipan_area[i] >= max_area )
-				data[i] += 5;
+			//if (max_area > 0){
+			if (qipan_area[i] >= max_area && qipan_area[i]!=1000)
+					data[i] += 5 * blob.count();
+			//}
+
+			if (qipan_area[i] <= min_area)
+				data[i] += 10 * blob.count();
 		}
-		LOG_IF(INFO, Caffe::root_solver()) << " max win area: " << max_area
-			<< " x " << max_area_x
-			<< " y " << max_area_y;
+
+
 
 		for (int i = 0; i < 361; i++)
 		{
