@@ -5,7 +5,7 @@ rem win 7 以上 需要读取 C:\in.sgf 写入 C:\AIout.sgf 请使用管理员权限打开本脚本
 :start
 F:
 cd F:\caffe-windows\
-rem copy C:\Users\teluw\Desktop\in.sgf c:\in.sgf /Y
+copy C:\Users\teluw\Desktop\in.sgf c:\in.sgf /Y
 
 rd /s /q Z:\GO-test-run-leveldb
 rem rd /s /q F:\caffe-windows\examples\GO\GO-test-run-leveldb
@@ -25,6 +25,6 @@ rem OUT OK
 rem out -> in
 rem "E:\MultiGo 4\gnugo.exe" -l C:\AIout.sgf -o C:\in.sgf --level 10
 type sgfcmd.txt | "C:\Program Files (x86)\Fuego\fuego.exe"
- 
+pause
 
 goto start

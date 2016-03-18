@@ -1193,9 +1193,19 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 										qipan_area[xx2 + 19 * yy2] = winarea;
 										
 									}
-
+									
 									if (winarea <= min_area)
 									{
+										if (0&& min_area == -33)
+										{
+										
+											LOG_IF(INFO, Caffe::root_solver()) << " 1min win area: " << min_area
+												<< " x " << min_area_x
+												<< " y " << min_area_y;
+											LOG_IF(INFO, Caffe::root_solver()) << " 1min win area: " << min_area
+												<< " x " << min_area_x1
+												<< " y " << min_area_y1;
+										}
 										if (min_area_x == xx1 && min_area_y == yy1)
 										{
 											qipan_area[min_area_x + 19 * min_area_y] = 1000;
@@ -1231,6 +1241,8 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 										min_area_x = xx;
 										min_area_y = yy;
 										qipan_area[xx + 19 * yy] = winarea;
+
+
 									}
 #endif
 								}
@@ -1242,6 +1254,9 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				LOG_IF(INFO, Caffe::root_solver()) << " min win area: " << min_area
 					<< " x " << min_area_x
 					<< " y " << min_area_y;
+				LOG_IF(INFO, Caffe::root_solver()) << " min win area: " << min_area
+					<< " x " << min_area_x1
+					<< " y " << min_area_y1;
 				//for (int i = 0; i < 361; i++)
 				//{
 				//	LOG_IF(INFO, Caffe::root_solver()) << "qipan_area: " << i
