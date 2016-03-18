@@ -645,7 +645,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 								int xend = 18;// xxx + range;
 								int ystart = 1;// yyy - range;
 								int yend = 18;// yyy + range;
-								bool inited = true;
+								//bool inited = true;
 								//if (xstart < 1)
 								//	xstart = 1;
 								//if (xend > 16)
@@ -682,9 +682,9 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 													//LOG(INFO) << "in range:" ;
 
 													
-													if (!inited)
-													{
-														inited = true;
+													//if (!inited)
+													//{
+														//inited = true;
 														memcpy(tpixels, pixels, rows1*cols1);
 														//tpixels[(yyy + rows1 / 2)* cols1 + xxx] = 0;
 														for (int i = rows1*cols1 / 2; i < rows1*cols1; i++)
@@ -698,11 +698,11 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 
 														label = jj2 * 19 + ii2 + 19;
 														datum.set_data(tpixels, rows1*cols1);
-													}
-													else{
-														label = yyy * 19 + xxx + 19;
-														datum.set_data(tpixels, rows1*cols1);
-													}
+													//}
+													//else{
+													//	label = yyy * 19 + xxx + 19;
+													//	datum.set_data(tpixels, rows1*cols1);
+													//}
 
 									datum.set_label(label);
 									sprintf_s(key_cstr, kMaxKeyLength, "%09d", item_id);
