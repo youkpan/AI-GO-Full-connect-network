@@ -723,55 +723,65 @@ namespace caffe {
 		char reach_boundary = 0;
 	};
 
-struct	broadcast_re * add_broadcast_label(int * groups, const char *qipan, char op_type, int groups_label, int get_count1, int x, int y)
+void add_broadcast_label(struct broadcast_re *  broadcast_result_ptr,int * groups, const char *qipan, char op_type, int groups_label, int x, int y)
 {
-	int get_count = 0;
-	struct broadcast_re  broadcast_result;
-	struct broadcast_re *  broadcast_result_ptr;
-	char reach_boundary = 0;
+	//int get_count = broadcast_result_ptr->count;
+	//struct broadcast_re  broadcast_result;
+	//struct broadcast_re *  broadcast_result_ptr;
+	//char reach_boundary = broadcast_result_ptr->reach_boundary;
+
+	//LOG_IF(INFO, Caffe::root_solver()) << "add_broadcast_label" << "x " << x << " y " << y << " groups_label " << groups_label;
+
 	//check nearby 
 	if (x < 18)
 		if (groups[x + 1 + 19 * y] == 0 && qipan[x + 1 + 19 * y] != op_type){
 			groups[x + 1 + 19 * y] = groups_label;
-			get_count++;
-			
-			broadcast_result_ptr = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, x + 1, y);
-			get_count += broadcast_result_ptr->count;
-			reach_boundary = reach_boundary||broadcast_result_ptr->reach_boundary  ;
+			//get_count++;
+			broadcast_result_ptr->count++;
+			 add_broadcast_label(broadcast_result_ptr,groups, qipan, op_type, groups_label, x + 1, y);
+			//get_count += broadcast_result_ptr->count;
+			//reach_boundary = reach_boundary||broadcast_result_ptr->reach_boundary  ;
+			//delete  broadcast_result_ptr;
 		}
 
 	if (x > 0)
 		if (groups[x - 1 + 19 * y] == 0 && qipan[x - 1 + 19 * y] != op_type){
 			groups[x - 1 + 19 * y] = groups_label;
-			get_count++;
-			broadcast_result_ptr = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, x - 1, y);
-			get_count += broadcast_result_ptr->count;
-			reach_boundary = reach_boundary || broadcast_result_ptr->reach_boundary;
+			//get_count++;
+			broadcast_result_ptr->count++;
+			add_broadcast_label(broadcast_result_ptr,groups, qipan, op_type, groups_label, x - 1, y);
+			//get_count += broadcast_result_ptr->count;
+			//reach_boundary = reach_boundary || broadcast_result_ptr->reach_boundary;
+			//delete  broadcast_result_ptr;
 		}
 	if (y < 18)
 		if (groups[x + 19 * (y + 1)] == 0 && qipan[x + 19 * (y + 1)] != op_type){
 			groups[x + 19 * (y + 1)] = groups_label;
-			get_count++;
-			broadcast_result_ptr = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, x, y + 1);
-			get_count += broadcast_result_ptr->count;
-			reach_boundary = reach_boundary || broadcast_result_ptr->reach_boundary;
+			//get_count++;
+			broadcast_result_ptr->count++;
+			add_broadcast_label(broadcast_result_ptr,groups, qipan, op_type, groups_label, x, y + 1);
+			//get_count += broadcast_result_ptr->count;
+			//reach_boundary = reach_boundary || broadcast_result_ptr->reach_boundary;
+			//delete  broadcast_result_ptr;
 		}
 	if (y > 0)
 		if (groups[x + 19 * (y - 1)] == 0 && qipan[x + 19 * (y - 1)] != op_type){
 			groups[x  + 19 * (y - 1)] = groups_label;
-			get_count++;
-			broadcast_result_ptr = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, x, y - 1);
-			get_count += broadcast_result_ptr->count;
-			reach_boundary = reach_boundary || broadcast_result_ptr->reach_boundary;
+			//get_count++;
+			broadcast_result_ptr->count++;
+			add_broadcast_label(broadcast_result_ptr ,groups, qipan, op_type, groups_label, x, y - 1);
+			//get_count += broadcast_result_ptr->count;
+			//reach_boundary = reach_boundary || broadcast_result_ptr->reach_boundary;
+			//delete  broadcast_result_ptr;
 		}
 
 	if ((x == 0 || y == 0 || x == 18 || y == 18) )
-		broadcast_result.reach_boundary = 1;
+		broadcast_result_ptr->reach_boundary = broadcast_result_ptr->reach_boundary || 1;
 
-	broadcast_result.count =  get_count;
-	broadcast_result.reach_boundary = broadcast_result.reach_boundary || reach_boundary;
+	//broadcast_result.count =  get_count;
+	//broadcast_result.reach_boundary = broadcast_result.reach_boundary || reach_boundary;
 
-	return  & broadcast_result;
+	//return  & broadcast_result;
 
 	//if (get_count>0)
 	//	return  & broadcast_result;
@@ -832,8 +842,8 @@ void broadcast_label(int *groups, int * groups_area, const char * qipan, char xx
 
 	int get_count = 0;
 	int reach_boundary = 0;
-	struct broadcast_re * broadcast_result;
-	broadcast_result = add_broadcast_label(groups, qipan, op_type, groups_label, get_count, xx, yy);
+	struct broadcast_re broadcast_result;
+	add_broadcast_label(&broadcast_result,groups, qipan, op_type, groups_label, xx, yy);
 //
 //	for (int range = 1; range < 19; range++){
 //		get_count = 0;
@@ -855,7 +865,7 @@ void broadcast_label(int *groups, int * groups_area, const char * qipan, char xx
 ///*
 //								if (abs(x - i) == range){
 //									for (int m = y; abs(m - y) <= range; m--){
-//										int get_count1 = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, x, m);
+//										int get_count1 = add_broadcast_label(groups, qipan, op_type, groups_label,  x, m);
 //										get_count += get_count1;
 //										if (get_count1 == 0)
 //											break;
@@ -863,7 +873,7 @@ void broadcast_label(int *groups, int * groups_area, const char * qipan, char xx
 //								}
 //								if (abs(y - j) == range){
 //									for (int m = x; abs(m - x) <= range; m--){
-//										int get_count1 = add_broadcast_label(groups, qipan, op_type, groups_label, get_count1, m, y);
+//										int get_count1 = add_broadcast_label(groups, qipan, op_type, groups_label,  m, y);
 //										get_count += get_count1;
 //										if (get_count1 == 0)
 //											break;
@@ -890,9 +900,9 @@ void broadcast_label(int *groups, int * groups_area, const char * qipan, char xx
 //				break;
 //	}
 //
-	reach_boundary = broadcast_result->reach_boundary;
+	reach_boundary = broadcast_result.reach_boundary;
 	if (reach_boundary)
-		groups_area[groups_label] = get_count;
+		groups_area[groups_label] = broadcast_result.count;
 	else
 		groups_area[groups_label] = 0;
 
@@ -916,6 +926,14 @@ int calc_area(int * groups_area)
 }
 
 //template <typename Dtype>
+void setmem(int * groups,int v,int count)
+{
+	for (int i = 0; i < count; i++)
+	{
+		groups[i]=v;
+	}
+}
+//template <typename Dtype>
 int get_max_label(int * groups)
 {
 	int max = 0;
@@ -933,10 +951,11 @@ float qipan_value(const char * qipan, bool show_result)
 
 	//struct chessline chessline[LINENUM], chessline1[LINENUM], chessline2[LINENUM];
 	int groups1[361], groups2[361], groups_area1[361], groups_area2[361];
-	memset(groups1, 0, 361);
-	memset(groups2, 0, 361);
-	memset(groups_area1, 0, 361);
-	memset(groups_area2, 0, 361);
+	setmem(groups1, 0, 361);
+	setmem(groups2, 0, 361);
+	setmem(groups_area1, 0, 361);
+	setmem(groups_area2, 0, 361);
+
 	for (int x = 0; x < 19; x++)
 	{
 		for (int y = 0; y < 19; y++)
@@ -945,11 +964,14 @@ float qipan_value(const char * qipan, bool show_result)
 			if (qipan[x + y * 19] == 1)
 			{
 				int max_label = get_max_label(groups1) + 1;
+				//LOG_IF(INFO, Caffe::root_solver()) << "type 2" << "x " << x << " y " << y << " get_max_label " << get_max_label;
 				broadcast_label(groups1, groups_area1, qipan, x, y,1, max_label);
 			}
 			else if (qipan[x + y * 19] == 2)//mine
 			{
+
 				int max_label = get_max_label(groups2) + 1;
+				//LOG_IF(INFO, Caffe::root_solver()) <<"type 2"<< "x " << x << " y " << y << " get_max_label " << get_max_label;
 				broadcast_label(groups2, groups_area2, qipan, x, y,2, max_label);
 			}
 			else if (qipan[x + y * 19] == 0)
@@ -1006,7 +1028,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 	static bool init = false;
 	static char  qipan[361];
 	static int loop_cnt = 0;
-
+	char qipan_temp[361];
 
   for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
     const Blob<Dtype>& blob = *top_vecs_[layer_id][top_id];
@@ -1055,7 +1077,6 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 					data[i] = 0;
 				}
 
-				int winarea = qipan_value(qipan,true);
 
 				memset(tpixels, 0, 2000);
 				int spos1 = 0;
@@ -1070,8 +1091,15 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 					}
 				}
 				tpixels[spos1++] = 0;
+
+				memcpy(qipan_temp, qipan, 361);
+				int winarea = qipan_value(qipan_temp, true);
+				LOG_IF(INFO, Caffe::root_solver()) << "winarea" << winarea;
+
 				//LOG(INFO) << "spos1:" << spos1 << " tpixels:" << tpixels;
 			}
+			else
+				LOG(INFO) << "get_mdata:nullptr" ;
 		}
 	}
 
@@ -1092,7 +1120,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				//mdata.next;
 
 				fdata = (float)mdata[i];
-				data[(int)round(fdata)]++;
+				data[(int)round(fdata)]+=8;
 			}
 			//data_abs_val_mean = (int)round(mdata[blob.count()-1]);
 		}
@@ -1102,7 +1130,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 		}
 
 
-		char qipan_temp[361];
+		
 		memcpy(qipan_temp, qipan, 361);
 		int qipan_area[361];
 		static int max_area = -400;
@@ -1118,7 +1146,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				//empty
 				if (qipan_temp[xx + 19 * yy] == 0){
 					qipan_temp[xx + 19 * yy] = 2;
-					int winarea = qipan_value(qipan_temp, false);
+					int winarea = qipan_value((const char *)qipan_temp, false);
 					qipan_area[xx + 19 * yy] = winarea;
 
 					if (winarea > max_area)
@@ -1132,8 +1160,8 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 
 		for (int i = 0; i < 361; i++)
 		{
-			if (qipan_area[i] >= max_area)
-				data[i] += 1;
+			if (qipan_area[i] >= max_area )
+				data[i] += 5;
 		}
 		LOG_IF(INFO, Caffe::root_solver()) << " max win area: " << max_area
 			<< " x " << max_area_x
