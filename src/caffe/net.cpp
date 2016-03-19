@@ -1333,11 +1333,11 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 		{
 			//if (max_area > 0){
 			if (qipan_area[i] >= max_area && qipan_area[i] != 1000)
-				data[i] += blob_count/361 * 0.25 / 0.4*(max_area - min_area) ;
+				data[i] += blob_count/361 * 0.25 / 0.4*(max_area - min_area) /10;
 			//}
 
 			if (qipan_area[i] <= min_area && max_area - min_area >1)
-				data[i] += blob_count / 361 * 0.25 / 0.4*(max_area - min_area);
+				data[i] += blob_count / 361 * 0.25 / 0.4*(max_area - min_area) / 10;
 		}
 
 
