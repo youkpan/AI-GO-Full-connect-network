@@ -1272,8 +1272,8 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 		//	<< "Layer " << layer_names_[layer_id]
 		//	<< "Layer id " << layer_id
 		//	<< ", top blob " << blob_name << " size " << blob.count();
-
-		if (blob.count() > 1)
+		uint32_t blob_count = blob.count();
+		if (blob_count > 1)
 		{
 			//LOG_IF(INFO, Caffe::root_solver()) << "check data";
 			LOG_IF(INFO, Caffe::root_solver()) << " start sum";
@@ -1285,7 +1285,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 
 			double min_data = 100,result_sum=0;
 			int data_idx = 0;
-			for (int i = 0; i < blob.count(); i++)
+			for (int i = 0; i < blob_count; i++)
 			{
 				//const int n, const float* x
 				//mdata.next;
@@ -1314,10 +1314,10 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				//if (i<2000)
 				//	LOG_IF(INFO, Caffe::root_solver()) << "i:"<< i <<" fdata: " << fdata;
 			}
-			//data_abs_val_mean = (int)round(mdata[blob.count()-1]);
+			//data_abs_val_mean = (int)round(mdata[blob_count-1]);
 		}
 		else{
-			Dtype data_abs_val_mean = (blob.asum_data() / blob.count());
+			Dtype data_abs_val_mean = (blob.asum_data() / blob_count);
 			data[(int)round(data_abs_val_mean)] ++;
 		}
 
@@ -1333,11 +1333,11 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 		{
 			//if (max_area > 0){
 			if (qipan_area[i] >= max_area && qipan_area[i] != 1000)
-				data[i] += sum * 0.25 / 0.4*(max_area - min_area) / 50;
+				data[i] += blob_count/361 * 0.25 / 0.4*(max_area - min_area) ;
 			//}
 
 			if (qipan_area[i] <= min_area && max_area - min_area >1)
-				data[i] += sum * 0.25 / 0.4*(max_area - min_area) / 50;
+				data[i] += blob_count / 361 * 0.25 / 0.4*(max_area - min_area);
 		}
 
 
