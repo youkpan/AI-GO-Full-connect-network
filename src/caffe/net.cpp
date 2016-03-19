@@ -1283,7 +1283,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				return;
 			}
 
-			double min_data = 100,result_sum=0;
+			double max_data = -100,result_sum=0;
 			int data_idx = 0;
 			for (int i = 0; i < blob_count; i++)
 			{
@@ -1294,10 +1294,10 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				fdata = (double)mdata[i];
 
 
-				if ( abs(fdata - 1.0) < min_data )
+				if ( fdata > max_data )
 				{
 					data_idx = i % 361;
-					min_data = abs(fdata - 1);
+					max_data = fdata;
 				}
 
 				//result_sum += fdata;
@@ -1307,7 +1307,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 					//data_idx = round(result_sum );
 					data[data_idx] += 1;
 					//LOG_IF(INFO, Caffe::root_solver()) << "i:" << i << " data_idx: " << data_idx;
-					min_data = 100;
+					max_data = -100;
 					result_sum = 0;
 				}
 				//
