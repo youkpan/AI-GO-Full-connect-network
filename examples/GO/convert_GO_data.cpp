@@ -446,11 +446,15 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 			char GOfile[5000];
 			char xx, yy;
 			int item_id = 0;
+			uint32_t filecount = 0;
 			//for (; item_id < start_num + num_items; ) {
 
 		vector<string>file_vec = statdir.BeginBrowseFilenames("*.*");
 		for (vector<string>::const_iterator it = file_vec.begin(); it < file_vec.end(); ++it)
 		{
+			if (++filecount < start_num && !(start_num == 1 || start_num == 2))
+				continue;
+
 			LOG(INFO) << "open file :" << *it;
 			std::ifstream image_file(*it, std::ios::in | std::ios::binary);
 
@@ -641,10 +645,10 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 								//	xxx = range  ;
 								//if (yyy < range)
 								//	yyy = range  ;
-								int xstart = 1;// xxx - range;
-								int xend = 18;// xxx + range;
-								int ystart = 1;// yyy - range;
-								int yend = 18;// yyy + range;
+								int xstart = 0;// xxx - range;
+								int xend = 19;// xxx + range;
+								int ystart = 0;// yyy - range;
+								int yend = 19;// yyy + range;
 								//bool inited = true;
 								//if (xstart < 1)
 								//	xstart = 1;
@@ -657,7 +661,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 								LOG(INFO) << "xxx:" << xxx << " yyy:" << yyy << " range:" << range;
 								//xx = 10;
 								//yy = 10;
-								for (range = 1; range < 19; range++)
+								for (range = 1; range < 3; range++)
 								for (int ii = xstart ; ii < cols1 / 2 && (ii< xend); ii ++)
 									for (int jj = ystart; jj<yend && jj < rows1 / 2; jj++)
 
@@ -671,10 +675,10 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 														|| (abs(ii - xxx) <= range && abs(jj - yyy) == range))
 														)
 														continue;
-													//if (!((abs(ii2 - xxx) == range && abs(jj2 - yyy)<=range)
-													//	|| (abs(ii2 - xxx) <= range && abs(jj2 - yyy) == range))
-													//	)
-													//	continue;
+													if (!((abs(ii2 - xxx) == range && abs(jj2 - yyy)<=range)
+														|| (abs(ii2 - xxx) <= range && abs(jj2 - yyy) == range))
+														)
+														continue;
 
 
 													if ((ii2 % (cols1 / 2) == ii) && jj == jj2)
@@ -689,12 +693,16 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 														//tpixels[(yyy + rows1 / 2)* cols1 + xxx] = 0;
 														for (int i = rows1*cols1 / 2; i < rows1*cols1; i++)
 														{
-															tpixels[i] = 0;
+															if ((int)((i%38)/19)==0)
+																tpixels[i] = 0;
 														}
 														tpixels[jj*cols1 + ii] = 1;
-														tpixels[(jj + rows1 / 2)*cols1 + ii] = 1;
-														tpixels[jj2*cols1 + ii2 + cols1 / 2] = 1;
-														tpixels[(jj2 + rows1 / 2)* cols1 + ii2 + cols1 / 2] = 1;
+														tpixels[jj2*cols1 + ii2] = 1;
+														if (ii%2==0)
+															tpixels[(jj + rows1 / 2)*cols1 + ii] = 1;
+
+														//tpixels[jj2*cols1 + ii2 + cols1 / 2] = 1;
+														//tpixels[(jj2 + rows1 / 2)* cols1 + ii2 + cols1 / 2] = 1;
 
 														label = jj2 * 19 + ii2 ;
 														datum.set_data(tpixels, rows1*cols1);
