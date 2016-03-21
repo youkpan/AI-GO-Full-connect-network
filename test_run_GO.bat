@@ -17,8 +17,8 @@ rem in ->out
 rem  把路径设置一下 把mutiGO 的sgf 文件 保存在test-run ，1 为白方 2 为黑方
 F:\caffe-windows\examples\GO\convert_GO_data.exe  F:\caffe-windows\examples\GO\test-run 1 19999 Z:\GO-test-run-leveldb --backend=leveldb
 
-
-.\3rdparty\bin\caffe.exe test --debug=true --iterations=1 --weights=examples/GO/lenet_5x5_iter_15000.caffemodel --model=examples/GO/GO_demo_LeNet_test_run_6L_5x5.prototxt
+rem 7%
+.\3rdparty\bin\caffe.exe test --debug=true --iterations=1 --weights=examples/GO/lenet_5x5_iter_17000.caffemodel --model=examples/GO/GO_demo_LeNet_test_run_6L_5x5.prototxt
 rem 2> Z:\AIout.txt 
 rem -gpu 0 
 rem OUT OK 

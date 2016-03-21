@@ -320,7 +320,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 		}
 
 			
-			bool usesummary = atoi(limit) > 1;// strcmp(label_filename, "summary") == 0;
+			bool usesummary = atoi(limit) > 0;// strcmp(label_filename, "summary") == 0;
 			std::ifstream image_file;
 			std::ifstream label_file;
 			int limit_num = atoi(limit);
@@ -452,7 +452,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 		vector<string>file_vec = statdir.BeginBrowseFilenames("*.*");
 		for (vector<string>::const_iterator it = file_vec.begin(); it < file_vec.end(); ++it)
 		{
-			if (++filecount < start_num && !(start_num == 1 || start_num == 2))
+			if (++filecount < start_num && !(start_num == 1 || start_num == 2) ||  item_id >=  num_items)
 				continue;
 
 			LOG(INFO) << "open file :" << *it;
@@ -506,7 +506,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 				int start_pos = mpos2;
 				start_ = 0;
 
-				while (mpos < sline.length() - 6 && item_id < start_num + num_items){
+				while (mpos < sline.length() - 6 && item_id <  num_items){
 
 					spos = sline.find_first_of('(', mpos2 + 1);
 					mpos = sline.find_first_of('[', mpos2 + 1);
@@ -549,7 +549,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 					}
 
 					if (isdebug)
-						LOG(INFO) << "xx" << xx << "yy" << yy;
+						LOG(INFO) << "xx" << xx + 'a' << "yy" << yy + 'a';
 
 					
 					if (GOfile[mpos -1] != win){
@@ -584,7 +584,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 						xx = GOfile[spos + 1] - 'a';
 						yy = GOfile[spos + 2] - 'a';
 
-						if (start_ > 30 || (start_num == 1 || start_num == 2))
+						if (start_ > 30 || (start_num == 1 || start_num == 2) )
 						{
 
 							if (isdebug)
@@ -637,7 +637,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 								}
 							}
 
-							if ((start_num == 1 || start_num == 2))
+							if ((start_num == 1 || start_num == 2) && num_items!=1)
 							{
 								int range = 10;
 								memset(tpixels, 0, rows1*cols1);
@@ -691,15 +691,15 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 														//inited = true;
 														memcpy(tpixels, pixels, rows1*cols1);
 														//tpixels[(yyy + rows1 / 2)* cols1 + xxx] = 0;
-														for (int i = rows1*cols1 / 2; i < rows1*cols1; i++)
-														{
-															if ((int)((i%38)/19)==0)
-																tpixels[i] = 0;
-														}
+														//for (int i = rows1*cols1 / 2; i < rows1*cols1; i++)
+														//{
+														//	if ((int)((i%38)/19)==0)
+														//		tpixels[i] = 0;
+														//}
 														tpixels[jj*cols1 + ii] = 1;
 														tpixels[jj2*cols1 + ii2] = 1;
-														if (ii%2==0)
-															tpixels[(jj + rows1 / 2)*cols1 + ii] = 1;
+														//if (ii%2==0)
+														//	tpixels[(jj + rows1 / 2)*cols1 + ii] = 1;
 
 														//tpixels[jj2*cols1 + ii2 + cols1 / 2] = 1;
 														//tpixels[(jj2 + rows1 / 2)* cols1 + ii2 + cols1 / 2] = 1;

@@ -1099,6 +1099,7 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 						if ((uint8_t)((spos % 38) / 19) == 0){
 							op_y = spos / 38 - 19;
 							op_x = (spos % 19);
+
 						}
 					}
 				}
@@ -1127,28 +1128,31 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 				int min_area_y = 0;
 
 				int xstart, ystart,xend ,yend;
-				int range = 2;
+				int range = 4;
 
+//				if (blob.count() / 1444 == 1)
+//					return;
+				xstart = op_x - range;
+				ystart = op_y - range;
+				xend = op_x + range;
+				yend = op_y + range;
+				if (xstart < 1)
+					xstart = 1;
+				if (ystart < 1)
+					ystart = 1;
+				if (xend >17)
+					xend = 17;
+				if (yend >17)
+					yend = 17;
 				#define SEARCH_MORE
 
-				for (int xx2 = 0; xx2 < 19; xx2++)
-					for (int yy2 = 0; yy2 < 19; yy2++)
-						for (int xx1 = 0; xx1 < 19; xx1++)
-							for (int yy1 = 0; yy1 < 19; yy1++)
+				for (int xx2 = xstart; xx2 < xend; xx2++)
+					for (int yy2 = ystart; yy2 < yend; yy2++)
+						for (int xx1 = xstart; xx1 < xend; xx1++)
+							for (int yy1 = ystart; yy1 < yend; yy1++)
 							{ 
 #ifdef SEARCH_MORE
-								xstart = op_x - range;
-								ystart = op_y - range;
-								xend = op_x + range;
-								yend = op_y + range;
-								if (xstart < 0)
-									xstart = 0;
-								if (ystart < 0)
-									ystart = 0;
-								if (xend >18)
-									xend = 18;
-								if (yend >18)
-									yend = 18;
+
 
 								for (int xx = xstart; xx < xend; xx++)
 									for (int yy = ystart; yy < yend; yy++)
@@ -1310,6 +1314,9 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 					max_data = -100;
 					result_sum = 0;
 				}
+
+				if (fdata>-100 && blob_count==361)
+					data[i % 361] += (int)((fdata+100)* 100);
 				//
 				//if (i<2000)
 				//	LOG_IF(INFO, Caffe::root_solver()) << "i:"<< i <<" fdata: " << fdata;
@@ -1333,11 +1340,11 @@ void Net<Dtype>::ForwardDebugInfo(const int layer_id) {
 		{
 			//if (max_area > 0){
 			if (qipan_area[i] >= max_area && qipan_area[i] != 1000)
-				data[i] += blob_count/361 * 0.25 / 0.4*(max_area - min_area) /10;
+				data[i] += blob_count/361 * 0.25 / 0.4*(max_area - min_area) / 2;
 			//}
 
 			if (qipan_area[i] <= min_area && max_area - min_area >1)
-				data[i] += blob_count / 361 * 0.25 / 0.4*(max_area - min_area) / 10;
+				data[i] += blob_count / 361 * 0.25 / 0.4*(max_area - min_area) / 2;
 		}
 
 
