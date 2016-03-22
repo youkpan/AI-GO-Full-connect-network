@@ -419,7 +419,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 		//¿ªÊ¼±éÀú
 			// Storing to db
 			int label;
-			unsigned char* tpixels = new unsigned char[2000];
+			unsigned char* tpixels = new unsigned char[20000];
 			unsigned char* pixels = new unsigned char[rows1 * cols1];
 			unsigned char win;
 			int count = 0;
@@ -443,7 +443,7 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 			//LOG(INFO) << "A total of " << num_items << " items.";
 			LOG(INFO) << "Rows: " << rows1 << " Cols: " << cols1;
 			string sline;
-			char GOfile[5000];
+			char GOfile[20000];
 			char xx, yy;
 			int item_id = 0;
 			uint32_t filecount = 0;
@@ -462,14 +462,14 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 			if (usesummary){
 				sline.clear();
 				//getline(image_file, sline, '\n');
-				memset(GOfile, 0, 5000);
-				image_file.read(GOfile, 5000);
+				memset(GOfile, 0, 20000);
+				image_file.read(GOfile, 20000);
 				sline = GOfile;
 				int start_ = 0;
 				mpos = sline.find("RE[");
 				if (!(start_num == 1 || start_num == 2))
 				{
-					if (mpos > 1000 || mpos < 10 || sline.length() < 200 || sline.length() - mpos < 500){
+					if (mpos > 10000 || mpos < 10 || sline.length() < 200 || sline.length() - mpos < 500){
 						LOG(INFO) << "error file :mpos" << mpos << "sline.length " << sline.length();
 						continue;
 					}
@@ -514,15 +514,15 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 					{
 						LOG(INFO) << "found fenzi mpos [:" << mpos << " mpos 2 ]:" << mpos2 << " pos (:" << spos;
 						spos1 = sline.find_first_of(')', spos + 1);
-						if (spos1 - spos  > spos - start_pos && spos - start_pos < 40 * 6 && spos1 - spos >40 * 6)
+						if (spos1 - spos >40 * 6) //spos1 - spos  > spos - start_pos && spos - start_pos < 40 * 6 && 
 						{
 							
 							//use new fenzi
 							LOG(INFO) << "use new fenzi:len:" << spos1 - spos << " old len:" << spos - start_pos << " pos1 ):" << spos1;
-							memset(pixels, 0, rows1*cols1);
-							start_pos = spos;
-							start_ = 0;
-							mpos = sline.find("B[", spos + 1)+1;
+							//memset(pixels, 0, rows1*cols1);
+							//start_pos = spos;
+							//start_ = 0;
+							//mpos = sline.find("B[", spos + 1)+1;
 
 						}
 						else
@@ -548,9 +548,25 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 						break;
 					}
 
-					if (isdebug)
-						LOG(INFO) << "xx" << xx + 'a' << "yy" << yy + 'a';
+					if (isdebug){
 
+						LOG(INFO) << "xx" << (int)xx << "yy" << (int)yy;
+						for (int x = 0; x < 19; x++)
+							for (int y = 0; y < 19; y++)
+							{
+								if (pixels[(y + rows1 / 2)*cols1 + x + cols1 / 2]){
+
+									LOG(INFO) << " last move win " << x << " y " << y;
+
+								}
+								if (pixels[(y + rows1 / 2)*cols1 + x ]){
+
+									LOG(INFO) << " last move not win " << x << " y " << y;
+
+								}
+
+							}
+					}
 					
 					if (GOfile[mpos -1] != win){
 
@@ -798,6 +814,9 @@ void convert_dataset(const char* image_filename, const char* label_filename, con
 					}
 					tpixels[spos1++] = 0;
 					LOG(INFO) << "spos1:" << spos1 << " tpixels:" << tpixels;
+
+
+
 					//LOG(INFO) << " tpixels:" << (char *)(tpixels);
 					//LOG(INFO) << " pixels:" << pixels;
 				}
